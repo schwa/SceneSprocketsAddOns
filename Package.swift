@@ -13,7 +13,7 @@ let package = Package(
         .library(name: "SceneSprocketsAddOns", targets: ["SceneSprocketsAddOns"]),
     ],
     dependencies: [
-        .package(path: "../SceneSprockets"),
+        .package(url: "https://github.com/schwa/SceneSprockets", branch: "main"),
         .package(url: "https://github.com/schwa/GeometryLite3D", .upToNextMinor(from: "0.2.7")),
         .package(url: "https://github.com/schwa/MetalSprockets", .upToNextMinor(from: "0.2.9")),
         .package(url: "https://github.com/schwa/SwiftMesh", .upToNextMinor(from: "0.0.11")),
