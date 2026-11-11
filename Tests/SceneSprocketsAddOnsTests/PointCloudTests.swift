@@ -12,7 +12,7 @@ import Testing
 private func render(_ cloud: PointCloud) throws -> [SIMD4<UInt8>] {
     let device = try #require(MTLCreateSystemDefaultDevice())
     let root = SceneGraph.Node()
-    _ = SceneGraph.Node(parent: root, trs: .init(translation: [0, 0, 4]), content: .camera(Camera(projection: PerspectiveProjection(verticalAngleOfView: .degrees(45)))))
+    root.addChild(SceneGraph.Node(trs: .init(translation: [0, 0, 4]), content: .camera(Camera(projection: PerspectiveProjection(verticalAngleOfView: .degrees(45))))))
     root.addChild(try cloud.makeNode(device: device))
     let renderer = try OffscreenRenderer(size: CGSize(width: 32, height: 32))
     let texture = try renderer.render(SceneGraphElement(sceneGraph: SceneGraph(root: root), aspectRatio: 1, renderers: [PointCloudRenderer()])).texture
@@ -40,7 +40,7 @@ func pointDrawsAsARoundDotOfItsSizeAndColor() throws {
 func nodeTransformMovesThePoints() throws {
     let device = try #require(MTLCreateSystemDefaultDevice())
     let root = SceneGraph.Node()
-    _ = SceneGraph.Node(parent: root, trs: .init(translation: [0, 0, 4]), content: .camera(Camera(projection: PerspectiveProjection(verticalAngleOfView: .degrees(45)))))
+    root.addChild(SceneGraph.Node(trs: .init(translation: [0, 0, 4]), content: .camera(Camera(projection: PerspectiveProjection(verticalAngleOfView: .degrees(45))))))
     let cloud = try PointCloud(points: [.init(position: .zero, color: [0, 1, 0, 1])], pointSize: 4).makeNode(device: device)
     cloud.trs.translation = [1, 0, 0]
     root.addChild(cloud)
