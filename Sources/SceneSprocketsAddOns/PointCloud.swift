@@ -71,7 +71,7 @@ public struct PointCloud {
 }
 
 /// The material of a point cloud node: its points and how to draw them. A ``PointCloudRenderer`` draws it.
-public struct PointCloudMaterial: SceneSprockets.Material {
+public struct PointCloudMaterial: SceneMaterial {
     /// `PointCloudPoint` values (MetalSprocketsAddOnsShaders) in the node's space, with linear colors.
     public var points: MTLBuffer
     /// The number of points in ``points``.
@@ -127,7 +127,7 @@ public struct PointCloudRenderer: SceneGraphMaterialRenderer, SceneGraphPrePassR
         // Framebuffers are made per node on first use.
     }
 
-    public var materialType: any SceneSprockets.Material.Type {
+    public var materialType: any SceneMaterial.Type {
         PointCloudMaterial.self
     }
 
