@@ -105,7 +105,7 @@ public struct PointCloudMaterial: SceneMaterial {
 ///
 /// Each point cloud is rasterized in its own compute pass before the scene pass, then resolved into the scene pass,
 /// depth-tested against the other meshes. Add one instance to the renderers of a `SceneView` or `SceneGraphElement`.
-public struct PointCloudRenderer: SceneGraphMaterialRenderer, SceneGraphPrePassRenderer {
+public struct PointCloudRenderer: MaterialRenderer, PrePassRenderer {
     // One framebuffer per point cloud node, kept across frames; the rasterizer cycles its own buffers per frame.
     private final class Framebuffers {
         var byNode: [ObjectIdentifier: PointCloudFramebuffer] = [:]
@@ -131,7 +131,7 @@ public struct PointCloudRenderer: SceneGraphMaterialRenderer, SceneGraphPrePassR
         PointCloudMaterial.self
     }
 
-    public func makePrePassElement(entries: [SceneGraph.MeshEntry], context: SceneGraphRenderContext, viewSize: (width: Int, height: Int), otherOpaqueContent _: () throws -> AnyElement?) throws -> AnyElement? {
+    public func makePrePassElement(entries: [SceneGraph.MeshEntry], context: RenderContext, viewSize: (width: Int, height: Int), otherOpaqueContent _: () throws -> AnyElement?) throws -> AnyElement? {
         let passes: [AnyElement] = try entries.compactMap { entry in
             guard let material = entry.material as? PointCloudMaterial, material.pointCount > 0, PointCloudFramebuffer.isSupported(on: material.points.device) else {
                 return nil
@@ -160,7 +160,7 @@ public struct PointCloudRenderer: SceneGraphMaterialRenderer, SceneGraphPrePassR
     }
 
     // swiftlint:disable:next unneeded_throws_rethrows - the protocol requirement throws
-    public func makeElement(entries: [SceneGraph.MeshEntry], context _: SceneGraphRenderContext) throws -> AnyElement {
+    public func makeElement(entries: [SceneGraph.MeshEntry], context _: RenderContext) throws -> AnyElement {
         let resolves: [AnyElement] = entries.compactMap { entry in
             guard let material = entry.material as? PointCloudMaterial, material.pointCount > 0, PointCloudFramebuffer.isSupported(on: material.points.device) else {
                 return nil
