@@ -10,7 +10,7 @@ let package = Package(
         .visionOS(.v26)
     ],
     products: [
-        .library(name: "SceneSprocketsAddOns", targets: ["SceneSprocketsAddOns"]),
+        .library(name: "SceneSprocketsAddOns", targets: ["SceneSprocketsAddOns", "SceneSprocketsAddOnsShaders"]),
         .library(name: "SceneSprocketsTerrain", targets: ["SceneSprocketsTerrain", "SceneSprocketsTerrainShaders"]),
     ],
     dependencies: [
@@ -27,12 +27,25 @@ let package = Package(
         .target(
             name: "SceneSprocketsAddOns",
             dependencies: [
+                "SceneSprocketsAddOnsShaders",
                 .product(name: "SceneSprockets", package: "SceneSprockets"),
+                .product(name: "SceneSprocketsBlinnPhong", package: "SceneSprockets"),
+                .product(name: "SceneSprocketsShaders", package: "SceneSprockets"),
+                .product(name: "GeometryLite3D", package: "GeometryLite3D"),
                 .product(name: "MetalSprockets", package: "MetalSprockets"),
                 .product(name: "MetalSprocketsAddOns", package: "MetalSprocketsAddOns"),
                 .product(name: "MetalSprocketsAddOnsShaders", package: "MetalSprocketsAddOns"),
                 .product(name: "SwiftMesh", package: "SwiftMesh"),
             ]
+        ),
+        .target(
+            name: "SceneSprocketsAddOnsShaders",
+            dependencies: [
+                .product(name: "SceneSprocketsShaders", package: "SceneSprockets"),
+            ],
+            exclude: ["Metal"],
+            cSettings: [.define("METAL_COMPILER_PLUGIN_DEBUG", .when(configuration: .debug))],
+            plugins: [.plugin(name: "MetalCompilerPlugin", package: "MetalCompilerPlugin")]
         ),
         // Large heightfield terrain tessellated on the GPU with a concurrent binary tree.
         .target(
@@ -60,7 +73,9 @@ let package = Package(
             name: "SceneSprocketsAddOnsTests",
             dependencies: [
                 "SceneSprocketsAddOns",
+                "SceneSprocketsAddOnsShaders",
                 .product(name: "SceneSprockets", package: "SceneSprockets"),
+                .product(name: "SceneSprocketsBlinnPhong", package: "SceneSprockets"),
                 .product(name: "GeometryLite3D", package: "GeometryLite3D"),
                 .product(name: "MetalSprocketsAddOnsShaders", package: "MetalSprocketsAddOns"),
                 .product(name: "MetalSprockets", package: "MetalSprockets"),
