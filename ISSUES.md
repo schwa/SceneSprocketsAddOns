@@ -67,11 +67,12 @@ Add these, and similar content, to the SceneSprocketsAddOns target (#314): lands
 ## 3: No signed distance field (SDF) blobs
 
 +++
-status: new
+status: open
 priority: low
 kind: feature
-labels: effort:l, deferred
+labels: effort:l
 created: 2026-11-12T04:33:18Z
+updated: 2026-11-16T20:12:47Z
 +++
 
 Moved from SceneSprockets #316. Issue numbers below refer to SceneSprockets.
@@ -93,11 +94,13 @@ Render SDFs the normal way (raymarching on the GPU) and tie them into the existi
 ## 4: No ocean or water surface, or procedural sky
 
 +++
-status: new
+status: closed
 priority: low
 kind: feature
 labels: effort:l, deferred
 created: 2026-11-12T04:33:18Z
+updated: 2026-11-16T19:43:18Z
+closed: 2026-11-16T19:43:18Z
 +++
 
 Moved from SceneSprockets #318. Issue numbers below refer to SceneSprockets.
@@ -108,6 +111,8 @@ SceneSprockets has no ocean or water surface node, and no procedural sky. Docume
 Starting point: the Open Sea example in MetalSprocketsExamples (Gerstner-wave ocean with an analytic sky), MetalSprocketsExamples/Packages/MetalSprocketsExamples/Sources/MetalSprocketsExamples/Demos/OpenSeaDemo/. Candidate for SceneSprocketsAddOns (#314).
 
 \- `2026-11-08T02:46:09Z`: Autonomous run: scoped, not changed. Two parts with design choices: (1) Ocean: the Open Sea example is a Gerstner-wave vertex shader with its own sun and analytic sky reflection (375 lines of Metal). As a ShaderMaterial in SceneSprocketsAddOns it would not see the scene's lights or shadows (ShaderMaterial gets none), only a sun direction parameter, and needs the app to pass time each frame; the alternative is CPU Gerstner displacement of a mesh drawn with PBR (lit, but CPU cost per frame). Same lit-vs-self-contained question as #322 and #300. (2) Procedural sky: needs a new Environment.Background case in the core (it is Codable and archived), plus a sun direction that could also drive a directional light. Question: for the ocean, unlit ShaderMaterial with its own sun, or CPU-displaced PBR mesh? For the sky, OK to add a Background case such as .physicalSky(sunDirection:turbidity:) to the core?
+
+- `2026-11-16T19:43:18Z`: Superseded by #16 (sun and sky), #18 (water and waves) and #19 (physically based sky), which split this issue up.
 
 ---
 
@@ -191,11 +196,12 @@ Starting point: the Point Cloud example in MetalSprocketsExamples, MetalSprocket
 ## 8: No dissolve effect for nodes
 
 +++
-status: new
+status: open
 priority: low
 kind: feature
-labels: effort:m, deferred
+labels: effort:m
 created: 2026-11-12T04:33:19Z
+updated: 2026-11-16T20:12:47Z
 +++
 
 Moved from SceneSprockets #322. Issue numbers below refer to SceneSprockets.
@@ -329,11 +335,13 @@ Part of #316.
 ## 13: No heightmap terrain in SceneSprocketsAddOns
 
 +++
-status: new
+status: closed
 priority: low
 kind: feature
 labels: effort:l, subtask, deferred
 created: 2026-11-12T04:33:20Z
+updated: 2026-11-16T19:43:18Z
+closed: 2026-11-16T19:43:18Z
 +++
 
 Moved from SceneSprockets #351. Issue numbers below refer to SceneSprockets.
@@ -344,6 +352,7 @@ SceneSprockets cannot build a landscape from a heightmap: there is no terrain me
 Part of #315.
 
 - `2026-11-12T04:33:36Z`: Parent: SceneSprocketsAddOns #2.
+- `2026-11-16T19:43:18Z`: Fixed by the SceneSprocketsTerrain target (commits sktkvyuu and vvwukkmy): GPU-tessellated heightmap terrain with clipmap streaming, from images or procedural noise, drawn as a scene graph node by TerrainRenderer.
 
 ---
 
@@ -398,5 +407,508 @@ Related: #321.
 \- `2026-11-08T04:05:14Z`: Done: SceneSprocketsAddOns.PointCloud now draws with MetalSprocketsAddOns' compute rasterizer. New PointCloudMaterial (points buffer of PointCloudPoint, size, size units, shape) and PointCloudRenderer (SceneGraphPrePassRenderer: one PointCloudRasterizePass per node before the scene pass, PointCloudResolvePipeline in the scene pass, reverse-Z). Removed the ShaderMaterial version and PointCloud.metal from SceneSprocketsShaders. Needs Apple GPU family 8+; otherwise not drawn. Tests: disc size/color, node transform, packed point data.
 
 - `2026-11-12T04:33:35Z`: Was closed in SceneSprockets (#353).
+
+---
+
+## 16: No sun and sky renderer for scenes
+
++++
+status: open
+priority: medium
+kind: feature
+labels: effort:m
+created: 2026-11-16T19:33:43Z
+updated: 2026-11-16T19:43:26Z
++++
+
+SceneSprockets backgrounds are a solid color, a gradient, or an environment map. There is no sky that follows a sun: a visible sun disc, a sky that brightens toward the sun, and a sun direction that matches the scene's directional light.
+
+The terrain (SceneSprocketsTerrain) has its own built-in sky, but only for terrain nodes and only with drawsSky.
+
+## Proposed (per user)
+
+A separate target and product.
+
+- `2026-11-16T19:43:18Z`: Related: #19 (physically based sky), closed #4.
+
+---
+
+## 17: No voxel renderer or voxel file loading
+
++++
+status: open
+priority: medium
+kind: feature
+labels: effort:l
+created: 2026-11-16T19:33:43Z
+updated: 2026-11-16T19:43:26Z
++++
+
+There is no way to draw voxel models in a scene, and no loader for standard voxel file formats (for example MagicaVoxel .vox).
+
+## Proposed (per user)
+
+A separate target and product.
+
+- `2026-11-16T19:43:18Z`: Related: closed #14 (voxel worlds) and #2. Starting point: the Voxel example in MetalSprocketsExamples and its MagicaVoxel .vox loader, Demos/VoxelDemo/.
+
+---
+
+## 18: No water or wave renderer
+
++++
+status: open
+priority: medium
+kind: feature
+labels: effort:l
+created: 2026-11-16T19:33:43Z
+updated: 2026-11-16T19:43:26Z
++++
+
+There is no water surface for scenes: no animated waves, reflection, refraction, or shoreline. The terrain's Coastal style fakes water with a flat blue layer at sea level.
+
+## Proposed (per user)
+
+A separate target and product.
+
+- `2026-11-16T19:43:18Z`: Related: closed #4 (older ocean issue). Starting point from it: the Open Sea example in MetalSprocketsExamples (Gerstner-wave ocean with an analytic sky), Demos/OpenSeaDemo/. Open design question from #4: an unlit shader material with its own sun, or a CPU-displaced mesh drawn with PBR so it gets the scene's lights and shadows.
+
+---
+
+## 19: No physically based sky for sunrise and sunset
+
++++
+status: open
+priority: medium
+kind: feature
+labels: effort:l
+created: 2026-11-16T19:33:43Z
+updated: 2026-11-16T19:43:26Z
++++
+
+There is no realistic sky that changes with the time of day: atmospheric scattering, sunrise and sunset colors, twilight, and matching sun light color for the scene.
+
+Related to the sun and sky renderer issue, which covers a simpler sky.
+
+## Proposed (per user)
+
+A separate target and product.
+
+- `2026-11-16T19:43:18Z`: Related: closed #4. Its notes: a procedural sky likely needs a new Environment.Background case in SceneSprockets core (Codable, archived), and the sun direction could also drive a directional light.
+
+---
+
+## 20: No fluid simulation and renderer
+
++++
+status: open
+priority: medium
+kind: feature
+labels: effort:xl
+created: 2026-11-16T19:33:50Z
+updated: 2026-11-16T19:43:26Z
++++
+
+There is no fluid system for scenes: no GPU fluid simulation (for example particle-based liquids, smoke, or fire) and no way to draw its surface or volume in the scene pass.
+
+Different from the water and wave renderer issue (#18), which covers large water surfaces.
+
+## Proposed (per user)
+
+A separate target and product.
+
+- `2026-11-16T19:43:18Z`: Related: closed #10 (older fluid issue, closed as wishful). Starting point: the FLIP Fluid example in MetalSprocketsExamples, Demos/MetalFLIPDemo/.
+
+---
+
+## 21: No volumetric clouds
+
++++
+status: open
+priority: low
+kind: feature
+labels: effort:l
+created: 2026-11-16T19:34:37Z
+updated: 2026-11-16T19:43:26Z
++++
+
+Scenes have no clouds. Skies are flat backgrounds, with no 3D clouds that the light passes through or that cast shadows.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+- `2026-11-16T19:43:18Z`: Related: closed #9 (older volumetric clouds issue). Starting point: the cloud demo in MetalSprocketsExamples, Demos/CloudDemo/. Needs scene depth, a sun direction and a sky, like FogPass.
+
+---
+
+## 22: No weather effects (rain, snow, wet surfaces)
+
++++
+status: open
+priority: low
+kind: feature
+labels: effort:l
+created: 2026-11-16T19:34:37Z
+updated: 2026-11-16T19:43:26Z
++++
+
+There is no rain or snow, and surfaces cannot look wet or covered in snow.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+- `2026-11-16T19:43:18Z`: Related: #21 (clouds) and #16 (sky).
+
+---
+
+## 23: No vegetation system (instanced grass and trees with wind)
+
++++
+status: open
+priority: low
+kind: feature
+labels: effort:l
+created: 2026-11-16T19:34:37Z
+updated: 2026-11-16T19:43:26Z
++++
+
+There is no way to scatter large amounts of grass, plants or trees over a surface such as the terrain, draw them as instances, or move them with wind.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+- `2026-11-16T19:43:18Z`: Related: closed #5 (grass or foliage fields). Starting points: Grass and Meadow examples in MetalSprocketsExamples. Pairs with SceneSprocketsTerrain.
+
+---
+
+## 24: No projected decals
+
++++
+status: closed
+priority: low
+kind: feature
+labels: effort:m
+created: 2026-11-16T19:34:37Z
+updated: 2026-11-16T20:03:49Z
+closed: 2026-11-16T20:03:49Z
++++
+
+There is no way to project an image onto existing meshes, for example bullet holes, footprints or road markings.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+- `2026-11-16T20:03:49Z`: Moved to SceneSprockets #397: this belongs in the main library.
+
+---
+
+## 25: No screen-space reflections
+
++++
+status: closed
+priority: low
+kind: feature
+labels: effort:m
+created: 2026-11-16T19:34:37Z
+updated: 2026-11-16T20:03:49Z
+closed: 2026-11-16T20:03:49Z
++++
+
+Shiny surfaces reflect only the environment map. They do not reflect other objects in the scene.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+- `2026-11-16T20:03:49Z`: Moved to SceneSprockets #398: this belongs in the main library.
+
+---
+
+## 26: No bloom, depth of field or motion blur
+
++++
+status: closed
+priority: low
+kind: feature
+labels: effort:m
+created: 2026-11-16T19:34:37Z
+updated: 2026-11-16T20:03:49Z
+closed: 2026-11-16T20:03:49Z
++++
+
+Post-processing has exposure, contrast, saturation, vignette and ambient occlusion. It has no bloom, depth of field or motion blur.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+- `2026-11-16T20:03:49Z`: Moved to SceneSprockets #399: this belongs in the main library.
+
+---
+
+## 27: No volumetric light shafts (god rays)
+
++++
+status: open
+priority: low
+kind: feature
+labels: effort:m
+created: 2026-11-16T19:34:38Z
+updated: 2026-11-16T19:43:26Z
++++
+
+Light does not scatter in the air, so there are no visible light shafts through gaps, trees or windows.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+- `2026-11-16T19:43:18Z`: Related: #21 (clouds).
+
+---
+
+## 28: No outline or toon (non-photorealistic) shading
+
++++
+status: open
+priority: low
+kind: feature
+labels: effort:m
+created: 2026-11-16T19:34:38Z
+updated: 2026-11-16T19:43:26Z
++++
+
+There is no outline shading or toon/cel shading for a non-photorealistic look.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+---
+
+## 29: Gaussian splats cannot be added as scene nodes
+
++++
+status: open
+priority: low
+kind: feature
+labels: effort:m
+created: 2026-11-16T19:34:38Z
+updated: 2026-11-16T19:43:26Z
++++
+
+MetalSprocketsGaussianSplats (https://github.com/schwa/MetalSprocketsGaussianSplats) draws 3D Gaussian splats and loads .ply, .splat, .spz and .sog files, but only in its own SplatView or render elements. A scene graph cannot hold a splat model as a node: splats cannot be placed with node transforms, drawn in the scene pass with the other meshes, depth-tested against opaque meshes, or culled and picked like other nodes.
+
+## Proposed (per user)
+
+An optional add-on in its own target and product, built on MetalSprocketsGaussianSplats.
+
+- `2026-11-16T19:43:18Z`: Related: #39 (animated point clouds) for the animated-splats case.
+
+---
+
+## 30: No procedural content generators (roads, buildings, L-system trees)
+
++++
+status: open
+priority: low
+kind: feature
+labels: effort:l
+created: 2026-11-16T19:34:38Z
+updated: 2026-11-16T19:43:26Z
++++
+
+There are no generators for roads, buildings or trees (for example L-systems) that make scene nodes.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+- `2026-11-16T19:43:18Z`: Related: #6 added ProceduralTree to SceneSprocketsAddOns, so trees already exist (space colonization, not L-systems).
+
+---
+
+## 31: No cloth or rope simulation
+
++++
+status: open
+priority: low
+kind: feature
+labels: effort:l
+created: 2026-11-16T19:34:38Z
+updated: 2026-11-16T19:43:26Z
++++
+
+Scenes cannot simulate cloth (flags, curtains) or ropes and cables.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+---
+
+## 32: No trail or ribbon effects
+
++++
+status: open
+priority: low
+kind: feature
+labels: effort:s
+created: 2026-11-16T19:34:38Z
+updated: 2026-11-16T19:43:26Z
++++
+
+There are no trails or ribbons that follow a moving object, for example sword swings, contrails or motion trails.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+---
+
+## 33: No billboard imposters for distant meshes
+
++++
+status: closed
+priority: low
+kind: feature
+labels: effort:m
+created: 2026-11-16T19:34:38Z
+updated: 2026-11-16T20:03:49Z
+closed: 2026-11-16T20:03:49Z
++++
+
+Distant meshes are drawn as full geometry or a lower LOD. They cannot be replaced by billboard imposters (pre-rendered views).
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+- `2026-11-16T20:03:49Z`: Moved to SceneSprockets #400: this belongs in the main library.
+
+---
+
+## 34: No geospatial data support (GeoJSON, map tiles)
+
++++
+status: open
+priority: low
+kind: feature
+labels: effort:l
+created: 2026-11-16T19:34:38Z
+updated: 2026-11-16T19:43:26Z
++++
+
+There is no way to load geospatial data such as GeoJSON or map tiles, or to lay it onto the terrain.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+---
+
+## 35: No editor gizmos (grid, axes, light and camera icons, bounds)
+
++++
+status: closed
+priority: low
+kind: feature
+labels: effort:m
+created: 2026-11-16T19:34:39Z
+updated: 2026-11-16T20:13:10Z
+closed: 2026-11-16T20:13:10Z
++++
+
+There is no ready-made set of editor aids: a ground grid, axes, icons for lights and cameras, and bounding boxes.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+- `2026-11-16T20:13:10Z`: Moved to SceneSprockets #406: this belongs in the main library.
+
+---
+
+## 36: No path or spline nodes
+
++++
+status: closed
+priority: low
+kind: feature
+labels: effort:m
+created: 2026-11-16T19:34:39Z
+updated: 2026-11-16T20:14:04Z
+closed: 2026-11-16T20:14:04Z
++++
+
+There are no spline paths in the scene, and nothing that moves cameras or objects along a path.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+- `2026-11-16T20:14:04Z`: Moved to SceneSprockets #407: this belongs in the main library.
+
+---
+
+## 37: No navmesh generation or pathfinding
+
++++
+status: open
+priority: low
+kind: feature
+labels: effort:l
+created: 2026-11-16T19:34:39Z
+updated: 2026-11-16T19:43:26Z
++++
+
+Scenes cannot generate a navigation mesh from their geometry or find paths across it.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+---
+
+## 38: No GPU timing overlay per pass
+
++++
+status: closed
+priority: low
+kind: feature
+labels: effort:s
+created: 2026-11-16T19:34:39Z
+updated: 2026-11-16T20:03:49Z
+closed: 2026-11-16T20:03:49Z
++++
+
+There is no overlay that shows how much GPU time each pass (shadows, the scene pass, post-processing, pre-passes) takes.
+
+## Proposed (per user)
+
+An optional add-on, in its own target and product.
+
+- `2026-11-16T20:03:49Z`: Moved to SceneSprockets #401: this belongs in the main library.
+
+---
+
+## 39: Point clouds cannot be animated
+
++++
+status: open
+priority: low
+kind: feature
+labels: effort:m
+created: 2026-11-16T19:36:05Z
+updated: 2026-11-16T19:43:26Z
++++
+
+A PointCloud's points are fixed when its node is made: positions, colors and sizes are copied into a buffer once. There is no way to animate them over time, for example point positions or colors that change per frame, point cloud sequences (one cloud per frame, such as volumetric video), or morphing between clouds. The only way to change the points is to make a new node.
+
+- `2026-11-16T19:43:18Z`: Related: #29 (Gaussian splats as scene nodes).
 
 ---
