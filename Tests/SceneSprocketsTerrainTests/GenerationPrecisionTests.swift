@@ -1,6 +1,6 @@
 import Metal
 import MetalSprockets
-@testable import SceneSprocketsAddOns
+@testable import SceneSprocketsTerrain
 import Testing
 
 /// terrainHeight (TerrainNoise.h) in Double, as a reference free of float precision limits.

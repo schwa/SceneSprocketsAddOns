@@ -1,18 +1,18 @@
 #import <Foundation/Foundation.h>
 
-@interface SceneSprocketsAddOnsShaders_BundleFinder : NSObject
+@interface SceneSprocketsTerrainShaders_BundleFinder : NSObject
 @end
 
-@implementation SceneSprocketsAddOnsShaders_BundleFinder
+@implementation SceneSprocketsTerrainShaders_BundleFinder
 @end
 
-@implementation NSBundle (SceneSprocketsAddOnsShaders)
+@implementation NSBundle (SceneSprocketsTerrainShaders)
 
-+ (NSBundle *)sceneSprocketsAddOnsShadersBundle {
++ (NSBundle *)sceneSprocketsTerrainShadersBundle {
     static NSBundle *moduleBundle = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSString *bundleName = @"SceneSprocketsAddOns_SceneSprocketsAddOnsShaders";
+        NSString *bundleName = @"SceneSprocketsAddOns_SceneSprocketsTerrainShaders";
         NSMutableArray<NSURL *> *candidates = [NSMutableArray array];
 
         // Detect SPM CLI test mode (swift test command)
@@ -30,7 +30,7 @@
 
         // Standard SPM bundle locations (works for Xcode tests, regular apps, and production)
         [candidates addObject:[NSBundle mainBundle].resourceURL];
-        [candidates addObject:[[NSBundle bundleForClass:[SceneSprocketsAddOnsShaders_BundleFinder class]] resourceURL]];
+        [candidates addObject:[[NSBundle bundleForClass:[SceneSprocketsTerrainShaders_BundleFinder class]] resourceURL]];
         [candidates addObject:[NSBundle mainBundle].bundleURL];
 
         if (isSPMTestMode) {

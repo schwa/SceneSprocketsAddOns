@@ -140,7 +140,9 @@ enum Heightmap {
         // Gray values are heights, not colors: drawing a grayscale image in its own color space keeps them as stored.
         // Converting to linear gray would apply the gamma CoreGraphics assumes for untagged gray images (about 2.2)
         // and squash heights. Color images still go through linear gray to get a luminance.
-        let space = image.colorSpace.flatMap { $0.model == .monochrome ? $0 : nil } ?? CGColorSpace(name: CGColorSpace.linearGray)!
+        guard let space = image.colorSpace.flatMap({ $0.model == .monochrome ? $0 : nil }) ?? CGColorSpace(name: CGColorSpace.linearGray) else {
+            throw TerrainError.allocationFailed("Linear gray color space")
+        }
         var pixels = [Float](repeating: 0, count: image.width * image.height)
         // CoreGraphics draws into a caller-owned buffer, so this needs the array's storage.
         let drawn = pixels.withUnsafeMutableBytes { bytes -> Bool in

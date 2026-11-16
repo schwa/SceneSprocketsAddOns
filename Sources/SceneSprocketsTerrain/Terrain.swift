@@ -1,7 +1,7 @@
 import CoreGraphics
 import Metal
 import MetalSprockets
-import SceneSprocketsAddOnsShaders
+import SceneSprocketsTerrainShaders
 import simd
 
 /// Convenience pairing of a `TerrainData` with a `TerrainTessellator` that draws it, forwarding the common calls of both.

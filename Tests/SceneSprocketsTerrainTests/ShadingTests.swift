@@ -1,8 +1,8 @@
 import CoreGraphics
 import Metal
 import MetalSprockets
-@testable import SceneSprocketsAddOns
-import SceneSprocketsAddOnsShaders
+@testable import SceneSprocketsTerrain
+import SceneSprocketsTerrainShaders
 import Testing
 
 /// Renders a fixed view offscreen with a fresh terrain (so LOD history is identical) and returns BGRA bytes.
@@ -102,10 +102,15 @@ func splitImage(left: [UInt8], right: [UInt8]) throws -> CGImage {
             pixels += x < 4 ? left : right
         }
     }
+    let space = try #require(CGColorSpace(name: CGColorSpace.sRGB))
     let image = pixels.withUnsafeMutableBytes { bytes in
         CGContext(
-            data: bytes.baseAddress, width: 8, height: 8, bitsPerComponent: 8, bytesPerRow: 32,
-            space: CGColorSpace(name: CGColorSpace.sRGB)!,
+            data: bytes.baseAddress,
+            width: 8,
+            height: 8,
+            bitsPerComponent: 8,
+            bytesPerRow: 32,
+            space: space,
             bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
         )?.makeImage()
     }
@@ -288,14 +293,15 @@ struct ShadingTests {
             camera.pitch = 0
         }
         let full = try renderTerrain(style: alpineWithoutNoise, placeCamera: level)
-        let composed = try renderTerrain(style: alpineWithoutNoise, compose: { terrain, uniforms, style in
+        let compose: (Terrain, TerrainUniforms, TerrainStyle) throws -> any Element = { terrain, uniforms, style in
             try Group {
                 try terrain.updateWork(uniforms: uniforms)
                 try RenderPass(label: "Caller") {
                     try terrain.terrainWork(uniforms: uniforms, style: style)
                 }
             }
-        }, placeCamera: level)
+        }
+        let composed = try renderTerrain(style: alpineWithoutNoise, compose: compose, placeCamera: level)
         let size = 160
         func row(_ pixels: [UInt8], _ y: Int) -> [UInt8] {
             Array(pixels[(y * size * 4) ..< ((y + 1) * size * 4)])

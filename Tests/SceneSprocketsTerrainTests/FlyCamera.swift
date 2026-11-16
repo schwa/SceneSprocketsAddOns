@@ -1,7 +1,7 @@
 import CoreGraphics
 import Foundation
-import SceneSprocketsAddOns
-import SceneSprocketsAddOnsShaders
+import SceneSprocketsTerrain
+import SceneSprocketsTerrainShaders
 import simd
 
 // Test-only camera: yaw/pitch with an infinite reversed-depth projection.

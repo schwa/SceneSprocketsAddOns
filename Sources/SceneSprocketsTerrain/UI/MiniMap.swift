@@ -1,6 +1,6 @@
 import MetalSprockets
 import MetalSprocketsUI
-import SceneSprocketsAddOnsShaders
+import SceneSprocketsTerrainShaders
 import simd
 import SwiftUI
 
@@ -63,6 +63,7 @@ public struct MiniMap: View {
                 try terrain.mapWork(style: style.value, heightExaggeration: heightExaggeration, contourInterval: contourInterval, contoursOnly: contoursOnly)
             }
             Image(systemName: "location.north.fill")
+                .accessibilityLabel("Camera position")
                 .font(.system(size: 14))
                 .foregroundStyle(.red)
                 .shadow(color: .black.opacity(0.6), radius: 1)

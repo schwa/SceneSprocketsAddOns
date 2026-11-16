@@ -1,6 +1,6 @@
 import Metal
 import MetalSprockets
-import SceneSprocketsAddOnsShaders
+import SceneSprocketsTerrainShaders
 import simd
 
 /// Everything a terrain renderer reads: heights as clipmap levels (kept filled by `streamer`) and per-point
@@ -29,7 +29,7 @@ public final class TerrainData {
             baseSize: worldSize,
             heightScale: heightScale,
             device: device,
-            library: try ShaderLibrary(bundle: .sceneSprocketsAddOnsShaders(), device: device)
+            library: try ShaderLibrary(bundle: .sceneSprocketsTerrainShaders(), device: device)
         )
         color = try PropertyField(name: "Color", source: Self.defaultColor, device: device)
         mask = try PropertyField(name: "Mask", source: Self.defaultMask, device: device)

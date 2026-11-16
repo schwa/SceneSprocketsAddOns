@@ -1,6 +1,6 @@
 import Metal
 import MetalSprockets
-import SceneSprocketsAddOnsShaders
+import SceneSprocketsTerrainShaders
 
 /// Eroded fBm terrain baked into heightmap textures, any region at a time. Heights depend only on world position, so
 /// separately baked regions join without seams.
@@ -21,7 +21,7 @@ public struct TerrainGenerator {
 
     public init(device: MTLDevice, octaves: Int = 8) throws {
         self.octaves = octaves
-        kernel = try ShaderLibrary(bundle: .sceneSprocketsAddOnsShaders(), device: device).heightmap_bake
+        kernel = try ShaderLibrary(bundle: .sceneSprocketsTerrainShaders(), device: device).heightmap_bake
     }
 
     /// Writes (height, height²) for `regions` into `texture` (an RG32Float level whose width spans `worldSize`).

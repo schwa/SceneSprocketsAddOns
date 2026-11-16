@@ -1,6 +1,6 @@
 import Metal
 import MetalSprockets
-import SceneSprocketsAddOnsShaders
+import SceneSprocketsTerrainShaders
 import simd
 
 /// Renders a `TerrainData` as a mesh tessellated by a concurrent binary tree with longest-edge bisection. It only reads
@@ -40,7 +40,7 @@ public final class TerrainTessellator {
 
     public init(data: TerrainData) throws {
         let device = data.device
-        let library = try ShaderLibrary(bundle: .sceneSprocketsAddOnsShaders(), device: device)
+        let library = try ShaderLibrary(bundle: .sceneSprocketsTerrainShaders(), device: device)
         self.data = data
         blendNoise = try Heightmap.blendNoise(device: device, library: library)
         detailNoise = try Heightmap.detailNoise(device: device, library: library)

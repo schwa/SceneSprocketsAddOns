@@ -1,8 +1,8 @@
 import CoreGraphics
 import Metal
 import MetalSprockets
-@testable import SceneSprocketsAddOns
-import SceneSprocketsAddOnsShaders
+@testable import SceneSprocketsTerrain
+import SceneSprocketsTerrainShaders
 import Testing
 
 /// #13: renders with blend noise differed in a few pixels between runs.
@@ -19,9 +19,15 @@ import Testing
             let commands = try #require(queue.makeCommandBuffer())
             let blit = try #require(commands.makeBlitCommandEncoder())
             blit.copy(
-                from: texture, sourceSlice: 0, sourceLevel: level, sourceOrigin: MTLOrigin(),
+                from: texture,
+                sourceSlice: 0,
+                sourceLevel: level,
+                sourceOrigin: MTLOrigin(),
                 sourceSize: MTLSize(width: width, height: height, depth: 1),
-                to: buffer, destinationOffset: 0, destinationBytesPerRow: width * bytesPerPixel, destinationBytesPerImage: width * height * bytesPerPixel
+                to: buffer,
+                destinationOffset: 0,
+                destinationBytesPerRow: width * bytesPerPixel,
+                destinationBytesPerImage: width * height * bytesPerPixel
             )
             blit.endEncoding()
             commands.commit()
@@ -32,7 +38,7 @@ import Testing
 
     @Test func blendNoiseBakesIdentically() throws {
         let device = try #require(MTLCreateSystemDefaultDevice())
-        let library = try ShaderLibrary(bundle: .sceneSprocketsAddOnsShaders(), device: device)
+        let library = try ShaderLibrary(bundle: .sceneSprocketsTerrainShaders(), device: device)
         let reference = try mipBytes(try Heightmap.blendNoise(device: device, library: library))
         for attempt in 0 ..< 5 {
             let again = try mipBytes(try Heightmap.blendNoise(device: device, library: library))

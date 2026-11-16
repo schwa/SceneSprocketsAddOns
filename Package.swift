@@ -11,6 +11,7 @@ let package = Package(
     ],
     products: [
         .library(name: "SceneSprocketsAddOns", targets: ["SceneSprocketsAddOns"]),
+        .library(name: "SceneSprocketsTerrain", targets: ["SceneSprocketsTerrain", "SceneSprocketsTerrainShaders"]),
     ],
     dependencies: [
         .package(url: "https://github.com/schwa/SceneSprockets", branch: "main"),
@@ -27,18 +28,27 @@ let package = Package(
             name: "SceneSprocketsAddOns",
             dependencies: [
                 .product(name: "SceneSprockets", package: "SceneSprockets"),
-                "SceneSprocketsAddOnsShaders",
                 .product(name: "MetalSprockets", package: "MetalSprockets"),
-                .product(name: "MetalSprocketsUI", package: "MetalSprockets"),
                 .product(name: "MetalSprocketsAddOns", package: "MetalSprocketsAddOns"),
                 .product(name: "MetalSprocketsAddOnsShaders", package: "MetalSprocketsAddOns"),
                 .product(name: "SwiftMesh", package: "SwiftMesh"),
+            ]
+        ),
+        // Large heightfield terrain tessellated on the GPU with a concurrent binary tree.
+        .target(
+            name: "SceneSprocketsTerrain",
+            dependencies: [
+                "SceneSprocketsTerrainShaders",
+                .product(name: "SceneSprockets", package: "SceneSprockets"),
+                .product(name: "MetalSprockets", package: "MetalSprockets"),
+                .product(name: "MetalSprocketsUI", package: "MetalSprockets"),
+                .product(name: "SwiftMesh", package: "SwiftMesh"),
             ],
-            // Copied, not processed, so the 16-bit terrain heightmap PNG is not recompressed.
-            resources: [.copy("Terrain/Resources")]
+            // Copied, not processed, so the 16-bit heightmap PNG is not recompressed.
+            resources: [.copy("Resources")]
         ),
         .target(
-            name: "SceneSprocketsAddOnsShaders",
+            name: "SceneSprocketsTerrainShaders",
             dependencies: [
                 .product(name: "MetalSprocketsShaders", package: "MetalSprockets"),
             ],
@@ -50,10 +60,19 @@ let package = Package(
             name: "SceneSprocketsAddOnsTests",
             dependencies: [
                 "SceneSprocketsAddOns",
-                "SceneSprocketsAddOnsShaders",
                 .product(name: "SceneSprockets", package: "SceneSprockets"),
                 .product(name: "GeometryLite3D", package: "GeometryLite3D"),
                 .product(name: "MetalSprocketsAddOnsShaders", package: "MetalSprocketsAddOns"),
+                .product(name: "MetalSprockets", package: "MetalSprockets"),
+            ]
+        ),
+        .testTarget(
+            name: "SceneSprocketsTerrainTests",
+            dependencies: [
+                "SceneSprocketsTerrain",
+                "SceneSprocketsTerrainShaders",
+                .product(name: "SceneSprockets", package: "SceneSprockets"),
+                .product(name: "GeometryLite3D", package: "GeometryLite3D"),
                 .product(name: "MetalSprockets", package: "MetalSprockets"),
             ]
         ),

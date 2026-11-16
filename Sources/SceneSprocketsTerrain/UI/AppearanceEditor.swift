@@ -1,5 +1,5 @@
 import CoreGraphics
-import SceneSprocketsAddOnsShaders
+import SceneSprocketsTerrainShaders
 import SwiftUI
 
 /// Controls for `TerrainSettings.style` and the sun direction.
@@ -191,12 +191,13 @@ public struct AppearanceEditor: View {
     }
 
     private func colorBinding(_ color: Binding<SIMD3<Float>>) -> Binding<CGColor> {
-        let space = CGColorSpace(name: CGColorSpace.extendedLinearSRGB)!
+        let space = CGColorSpace(name: CGColorSpace.extendedLinearSRGB)
         return Binding {
             let color = color.wrappedValue
-            return CGColor(colorSpace: space, components: [CGFloat(color.x), CGFloat(color.y), CGFloat(color.z), 1])!
+            let components = [CGFloat(color.x), CGFloat(color.y), CGFloat(color.z), 1]
+            return space.flatMap { CGColor(colorSpace: $0, components: components) } ?? CGColor(srgbRed: components[0], green: components[1], blue: components[2], alpha: 1)
         } set: { newColor in
-            guard let linear = newColor.converted(to: space, intent: .defaultIntent, options: nil), let components = linear.components, components.count >= 3 else {
+            guard let space, let linear = newColor.converted(to: space, intent: .defaultIntent, options: nil), let components = linear.components, components.count >= 3 else {
                 return
             }
             color.wrappedValue = SIMD3(Float(components[0]), Float(components[1]), Float(components[2]))

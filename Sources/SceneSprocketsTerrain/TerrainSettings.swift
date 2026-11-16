@@ -1,6 +1,6 @@
 import CoreGraphics
 import MetalSprockets
-import SceneSprocketsAddOnsShaders
+import SceneSprocketsTerrainShaders
 import simd
 
 public struct TerrainSettings: Sendable {

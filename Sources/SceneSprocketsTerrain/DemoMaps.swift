@@ -1,6 +1,6 @@
 import CoreGraphics
 import Foundation
-import SceneSprocketsAddOnsShaders
+import SceneSprocketsTerrainShaders
 import simd
 
 /// Generated color and mask maps for trying out map-driven layers without image files.
@@ -56,14 +56,21 @@ public enum DemoMaps {
                 }
             }
         }
-        guard let provider = CGDataProvider(data: Data(bytes) as CFData) else {
+        guard let provider = CGDataProvider(data: Data(bytes) as CFData), let space = CGColorSpace(name: CGColorSpace.sRGB) else {
             return nil
         }
         return CGImage(
-            width: size, height: size, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: size * 4,
-            space: CGColorSpace(name: CGColorSpace.sRGB)!,
+            width: size,
+            height: size,
+            bitsPerComponent: 8,
+            bitsPerPixel: 32,
+            bytesPerRow: size * 4,
+            space: space,
             bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
-            provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent
+            provider: provider,
+            decode: nil,
+            shouldInterpolate: true,
+            intent: .defaultIntent
         )
     }
 

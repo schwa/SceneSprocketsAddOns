@@ -1,8 +1,8 @@
 import CoreGraphics
 import Metal
 import MetalSprockets
-@testable import SceneSprocketsAddOns
-import SceneSprocketsAddOnsShaders
+@testable import SceneSprocketsTerrain
+import SceneSprocketsTerrainShaders
 import simd
 import Testing
 
@@ -94,25 +94,38 @@ struct TerrainTreeTests {
         return t
     }
 
-    @Test func imageHeightmapStoresMoments() throws {
-        let device = try #require(MTLCreateSystemDefaultDevice())
-        // 4x4 16-bit grayscale, values 0, 1/15, ..., 1 in row-major order.
-        var pixels = (0 ..< 16).map { UInt16($0 * 4_369) }
-        let optionalImage = pixels.withUnsafeMutableBytes { bytes in
+    // A square 16-bit linear gray image, row-major.
+    private func grayImage(_ pixels: [UInt16], width: Int) throws -> CGImage {
+        var pixels = pixels
+        let space = try #require(CGColorSpace(name: CGColorSpace.linearGray))
+        let image = pixels.withUnsafeMutableBytes { bytes in
             CGContext(
-                data: bytes.baseAddress, width: 4, height: 4, bitsPerComponent: 16, bytesPerRow: 8,
-                space: CGColorSpace(name: CGColorSpace.linearGray)!,
+                data: bytes.baseAddress,
+                width: width,
+                height: width,
+                bitsPerComponent: 16,
+                bytesPerRow: width * 2,
+                space: space,
                 bitmapInfo: CGImageAlphaInfo.none.rawValue | CGBitmapInfo.byteOrder16Little.rawValue
             )?.makeImage()
         }
-        let image = try #require(optionalImage)
+        return try #require(image)
+    }
+
+    @Test func imageHeightmapStoresMoments() throws {
+        let device = try #require(MTLCreateSystemDefaultDevice())
+        // 4x4 16-bit grayscale, values 0, 1/15, ..., 1 in row-major order.
+        let image = try grayImage((0 ..< 16).map { UInt16($0 * 4_369) }, width: 4)
         let terrain = try Terrain(device: device, heightSource: .image(image), heightScale: 15)
 
         func level(_ index: Int) -> [SIMD2<Float>] {
             let width = max(1, 4 >> index)
             var values = [SIMD2<Float>](repeating: .zero, count: width * width)
             values.withUnsafeMutableBytes { bytes in
-                terrain.levels[0].moments.getBytes(bytes.baseAddress!, bytesPerRow: width * 8, from: MTLRegionMake2D(0, 0, width, width), mipmapLevel: index)
+                guard let baseAddress = bytes.baseAddress else {
+                    return
+                }
+                terrain.levels[0].moments.getBytes(baseAddress, bytesPerRow: width * 8, from: MTLRegionMake2D(0, 0, width, width), mipmapLevel: index)
             }
             return values
         }
@@ -134,15 +147,7 @@ struct TerrainTreeTests {
     @Test func cameraStaysAboveGround() throws {
         let device = try #require(MTLCreateSystemDefaultDevice())
         // 2x2 heights 0, 1/3, 2/3, 1 (row-major), scaled to 0...300 m over a 1000 m world.
-        var pixels: [UInt16] = [0, 21_845, 43_690, 65_535]
-        let optionalImage = pixels.withUnsafeMutableBytes { bytes in
-            CGContext(
-                data: bytes.baseAddress, width: 2, height: 2, bitsPerComponent: 16, bytesPerRow: 4,
-                space: CGColorSpace(name: CGColorSpace.linearGray)!,
-                bitmapInfo: CGImageAlphaInfo.none.rawValue | CGBitmapInfo.byteOrder16Little.rawValue
-            )?.makeImage()
-        }
-        let image = try #require(optionalImage)
+        let image = try grayImage([0, 21_845, 43_690, 65_535], width: 2)
         let terrain = try Terrain(device: device, heightSource: .image(image), worldSize: 1_000, heightScale: 300)
 
         // Texel centers are at x/z = -250 and +250. Between them the height is bilinear; beyond them it clamps.
@@ -162,15 +167,7 @@ struct TerrainTreeTests {
 
     @Test func flatTerrainDoesNotSplit() throws {
         let device = try #require(MTLCreateSystemDefaultDevice())
-        var pixels = [UInt16](repeating: 30_000, count: 64 * 64)
-        let optionalImage = pixels.withUnsafeMutableBytes { bytes in
-            CGContext(
-                data: bytes.baseAddress, width: 64, height: 64, bitsPerComponent: 16, bytesPerRow: 128,
-                space: CGColorSpace(name: CGColorSpace.linearGray)!,
-                bitmapInfo: CGImageAlphaInfo.none.rawValue | CGBitmapInfo.byteOrder16Little.rawValue
-            )?.makeImage()
-        }
-        let image = try #require(optionalImage)
+        let image = try grayImage([UInt16](repeating: 30_000, count: 64 * 64), width: 64)
         let runner = try Runner(device: device)
         let camera = FlyCamera()
         camera.position = [0, 900, 0]

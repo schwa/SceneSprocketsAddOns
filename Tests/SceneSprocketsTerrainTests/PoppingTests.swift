@@ -1,7 +1,7 @@
 import Metal
 import MetalSprockets
-@testable import SceneSprocketsAddOns
-import SceneSprocketsAddOnsShaders
+@testable import SceneSprocketsTerrain
+import SceneSprocketsTerrainShaders
 import Testing
 
 /// How much the picture jumps when the clipmap levels move, isolated from camera motion: the same view is drawn just

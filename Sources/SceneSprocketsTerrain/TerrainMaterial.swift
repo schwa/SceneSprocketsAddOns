@@ -1,4 +1,4 @@
-import SceneSprocketsAddOnsShaders
+import SceneSprocketsTerrainShaders
 import simd
 
 public extension TerrainLayer {

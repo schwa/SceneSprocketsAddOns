@@ -1,7 +1,7 @@
 import Metal
 import MetalSprockets
 import SceneSprockets
-import SceneSprocketsAddOnsShaders
+import SceneSprocketsTerrainShaders
 import simd
 import SwiftMesh
 

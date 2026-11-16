@@ -3,7 +3,7 @@ import GeometryLite3D
 import Metal
 import MetalSprockets
 import SceneSprockets
-import SceneSprocketsAddOns
+import SceneSprocketsTerrain
 import simd
 import Testing
 
