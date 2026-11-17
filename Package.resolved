@@ -1,5 +1,5 @@
 {
-  "originHash" : "994c95671e74161899596d458b67bd33862225c48717f7506d03d2deacbaf1e5",
+  "originHash" : "75b54cb30db04ec94df81a2b2f7e773720015890402929723c86e08f2f4d3316",
   "pins" : [
     {
       "identity" : "basisuniversalmetal",
@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/MetalSprockets",
       "state" : {
-        "revision" : "54e122456aea1e830c634f5a087fb83341d00c6f",
-        "version" : "0.3.1"
+        "revision" : "8a5839d7874fa3d7bc4b3a50fdb45835de516873",
+        "version" : "0.3.2"
       }
     },
     {
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/MetalSprocketsAddOns",
       "state" : {
-        "revision" : "3ada026b6ccc752a491c814831acd4995b7307e2",
-        "version" : "0.3.0"
+        "revision" : "2afe2f0cdc8de8ac0dceb29dc971256ec5cd6097",
+        "version" : "0.3.2"
       }
     },
     {
@@ -87,8 +87,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/MetalSprocketsPBR",
       "state" : {
-        "revision" : "158082e413431a0f83ae998a1c89708442817c31",
-        "version" : "0.2.0"
+        "revision" : "e5dad5a16dfdeaac07c8ce28511a137e65462a1b",
+        "version" : "0.2.2"
       }
     },
     {
@@ -106,7 +106,7 @@
       "location" : "https://github.com/schwa/SceneSprockets",
       "state" : {
         "branch" : "main",
-        "revision" : "d954f4a7e4109d157be485553ce476a11ba94ca8"
+        "revision" : "a097c733a35401b01e8f78cd31d4eaace37a7c03"
       }
     },
     {
@@ -222,8 +222,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/SwiftJolt.git",
       "state" : {
-        "revision" : "4cd5a89121e49f9803c926554e7751ac0e9fd0bf",
-        "version" : "0.0.1"
+        "revision" : "e044cf48c7e262b0a33d8a57fd9ebe8be60190df",
+        "version" : "0.0.3"
       }
     },
     {
