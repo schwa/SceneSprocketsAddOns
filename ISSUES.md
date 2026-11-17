@@ -688,13 +688,14 @@ An optional add-on, in its own target and product.
 ## 28: No outline or toon (non-photorealistic) shading
 
 +++
-status: open
+status: closed
 priority: low
 kind: feature
 labels: effort:m
 milestone: M1
 created: 2026-11-16T19:34:38Z
-updated: 2026-11-16T23:16:28Z
+updated: 2026-11-17T04:52:20Z
+closed: 2026-11-17T04:52:20Z
 +++
 
 There is no outline shading or toon/cel shading for a non-photorealistic look.
