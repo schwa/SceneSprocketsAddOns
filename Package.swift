@@ -12,6 +12,7 @@ let package = Package(
     products: [
         .library(name: "SceneSprocketsAddOns", targets: ["SceneSprocketsAddOns", "SceneSprocketsAddOnsShaders"]),
         .library(name: "SceneSprocketsTerrain", targets: ["SceneSprocketsTerrain", "SceneSprocketsTerrainShaders"]),
+        .library(name: "SceneSprocketsVoxels", targets: ["SceneSprocketsVoxels", "SceneSprocketsVoxelsShaders"]),
     ],
     dependencies: [
         .package(url: "https://github.com/schwa/SceneSprockets", branch: "main"),
@@ -68,6 +69,38 @@ let package = Package(
             exclude: ["Metal"],
             cSettings: [.define("METAL_COMPILER_PLUGIN_DEBUG", .when(configuration: .debug))],
             plugins: [.plugin(name: "MetalCompilerPlugin", package: "MetalCompilerPlugin")]
+        ),
+        // Voxel grids traced in the fragment shader, and a MagicaVoxel .vox loader.
+        .target(
+            name: "SceneSprocketsVoxels",
+            dependencies: [
+                "SceneSprocketsVoxelsShaders",
+                .product(name: "SceneSprockets", package: "SceneSprockets"),
+                .product(name: "SceneSprocketsBlinnPhong", package: "SceneSprockets"),
+                .product(name: "SceneSprocketsShaders", package: "SceneSprockets"),
+                .product(name: "GeometryLite3D", package: "GeometryLite3D"),
+                .product(name: "MetalSprockets", package: "MetalSprockets"),
+                .product(name: "SwiftMesh", package: "SwiftMesh"),
+            ]
+        ),
+        .target(
+            name: "SceneSprocketsVoxelsShaders",
+            dependencies: [
+                .product(name: "SceneSprocketsShaders", package: "SceneSprockets"),
+            ],
+            exclude: ["Metal"],
+            cSettings: [.define("METAL_COMPILER_PLUGIN_DEBUG", .when(configuration: .debug))],
+            plugins: [.plugin(name: "MetalCompilerPlugin", package: "MetalCompilerPlugin")]
+        ),
+        .testTarget(
+            name: "SceneSprocketsVoxelsTests",
+            dependencies: [
+                "SceneSprocketsVoxels",
+                .product(name: "SceneSprockets", package: "SceneSprockets"),
+                .product(name: "GeometryLite3D", package: "GeometryLite3D"),
+                .product(name: "SceneSprocketsBlinnPhong", package: "SceneSprockets"),
+                .product(name: "MetalSprockets", package: "MetalSprockets"),
+            ]
         ),
         .testTarget(
             name: "SceneSprocketsAddOnsTests",

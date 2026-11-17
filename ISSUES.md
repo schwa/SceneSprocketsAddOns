@@ -448,13 +448,14 @@ A separate target and product.
 ## 17: No voxel renderer or voxel file loading
 
 +++
-status: open
+status: closed
 priority: medium
 kind: feature
 labels: effort:l
 milestone: M1
 created: 2026-11-16T19:33:43Z
-updated: 2026-11-16T23:16:12Z
+updated: 2026-11-17T02:10:56Z
+closed: 2026-11-17T02:10:56Z
 +++
 
 There is no way to draw voxel models in a scene, and no loader for standard voxel file formats (for example MagicaVoxel .vox).
@@ -956,6 +957,87 @@ created: 2026-11-17T01:14:51Z
 SignedDistanceMaterial.Surface has only a Blinn-Phong case. SDF shapes cannot be lit with PBR materials (metallic-roughness, clearcoat, sheen, image-based lighting), so they do not match PBR meshes in the same scene.
 
 MetalSprocketsPBR 0.2.2 provides PBRLighting.h (PBR::Fragment and PBR::shade) for surfaces that build their own fragment.
+
+---
+
+## 42: MagicaVoxel loader ignores the file's scene graph
+
++++
+status: new
+priority: low
+kind: feature
+created: 2026-11-17T02:09:45Z
++++
+
+VoxelGrid.magicaVoxelModels(data:) ignores the nTRN, nGRP, nSHP and LAYR chunks. Files with more than one model load as separate grids with no position, rotation, or layer. Scenes built in MagicaVoxel from several models do not load as laid out.
+
+Related: #17.
+
+---
+
+## 43: MagicaVoxel files without a palette load as gray
+
++++
+status: new
+priority: low
+kind: bug
+created: 2026-11-17T02:09:46Z
++++
+
+A .vox file with no RGBA chunk uses MagicaVoxel's built-in default palette. VoxelGrid.magicaVoxelModels(data:) makes every voxel gray (200, 200, 200) instead, so such files lose their colors.
+
+Related: #17.
+
+---
+
+## 44: SceneSprocketsVoxels has no DocC documentation
+
++++
+status: new
+priority: low
+kind: documentation
+created: 2026-11-17T02:09:46Z
++++
+
+The SceneSprocketsVoxels product has no documentation catalog. VoxelGrid, VoxelMaterial, VoxelRenderer, the MagicaVoxel loader, and SceneGraph.Node.setVoxels do not appear in any DocC page.
+
+Related: #17.
+
+---
+
+## 45: Voxel grids cannot use PBR materials
+
++++
+status: new
+priority: low
+kind: feature
+depends: 17
+created: 2026-11-17T02:10:23Z
++++
+
+VoxelMaterial.Surface has only a Blinn-Phong case. Voxel grids cannot be lit with PBR materials (metallic-roughness, clearcoat, sheen, image-based lighting), so they do not match PBR meshes in the same scene.
+
+MetalSprocketsPBR 0.2.2 provides PBRLighting.h (PBR::Fragment and PBR::shade) for surfaces that build their own fragment.
+
+Related: #41 (same gap for SDF shapes).
+
+---
+
+## 46: Voxel grids cast no shadows
+
++++
+status: new
+priority: low
+kind: feature
+depends: 17
+created: 2026-11-17T02:10:23Z
++++
+
+Voxel grids receive shadows from the shadow map, but they do not cast shadows. They are not drawn in the shadow pass, so they do not shadow meshes, the ground, other voxel grids, or themselves.
+
+Expected: voxel grids cast shadows like meshes do.
+
+Related: #40 (same gap for SDF shapes).
 
 ---
 
