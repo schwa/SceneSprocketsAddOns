@@ -67,13 +67,14 @@ Add these, and similar content, to the SceneSprocketsAddOns target (#314): lands
 ## 3: No signed distance field (SDF) blobs
 
 +++
-status: open
+status: closed
 priority: low
 kind: feature
 labels: effort:l
 milestone: M1
 created: 2026-11-12T04:33:18Z
-updated: 2026-11-16T23:16:04Z
+updated: 2026-11-17T01:14:51Z
+closed: 2026-11-17T01:14:51Z
 +++
 
 Moved from SceneSprockets #316. Issue numbers below refer to SceneSprockets.
@@ -91,14 +92,14 @@ Related: SceneSprocketsAddOns target (#314).
 Render SDFs the normal way (raymarching on the GPU) and tie them into the existing material shaders (Blinn-Phong, PBR), so SDF shapes are lit, shadowed and depth-tested like meshes.
 
 - `2026-11-16T23:28:35Z`: Design (grill session):
-- One proxy box per SDF node. Back faces are drawn; the ray starts at the analytic box entry or the near plane, whichever is later. A hit writes [[depth(any)]]; a miss discards.
-- Smooth merging only between primitives in one node. No blending across nodes.
-- The shape tree is a flat instruction buffer read by one generic shader, so animation does not recompile pipelines.
-- API: indirect enum SignedDistanceShape (sphere, roundedBox, capsule, smoothUnion, smoothSubtraction, smoothIntersection), shape.makeNode(device:material:). Bounds padded by the largest smoothing radius. Animate by setting a new shape on SignedDistanceMaterial.
-- Lighting reuses BlinnPhongLighting.h (SceneSprockets) and PBRLighting.h (MetalSprocketsPBR), both uncommitted refactors. Blinn-Phong first, PBR second (needs a MetalSprocketsPBR release). Keep the two models structured alike.
-- March defaults: 128 steps, a hit threshold that scales with distance, step scale 1.
-- Casting shadows deferred to #40. Receiving shadows works.
-- Tests: CPU encoding, distance and bounds tests, plus offscreen render tests (coverage matches a mesh sphere, depth against meshes, camera inside the box, smooth union has no gap). Animated metaball demo.
+- `2026-11-16T23:28:35Z`: One proxy box per SDF node. Back faces are drawn; the ray starts at the analytic box entry or the near plane, whichever is later. A hit writes [[depth(any)]]; a miss discards.
+- `2026-11-16T23:28:35Z`: Smooth merging only between primitives in one node. No blending across nodes.
+- `2026-11-16T23:28:35Z`: The shape tree is a flat instruction buffer read by one generic shader, so animation does not recompile pipelines.
+- `2026-11-16T23:28:35Z`: API: indirect enum SignedDistanceShape (sphere, roundedBox, capsule, smoothUnion, smoothSubtraction, smoothIntersection), shape.makeNode(device:material:). Bounds padded by the largest smoothing radius. Animate by setting a new shape on SignedDistanceMaterial.
+- `2026-11-16T23:28:35Z`: Lighting reuses BlinnPhongLighting.h (SceneSprockets) and PBRLighting.h (MetalSprocketsPBR), both uncommitted refactors. Blinn-Phong first, PBR second (needs a MetalSprocketsPBR release). Keep the two models structured alike.
+- `2026-11-16T23:28:35Z`: March defaults: 128 steps, a hit threshold that scales with distance, step scale 1.
+- `2026-11-16T23:28:35Z`: Casting shadows deferred to #40. Receiving shadows works.
+- `2026-11-16T23:28:35Z`: Tests: CPU encoding, distance and bounds tests, plus offscreen render tests (coverage matches a mesh sphere, depth against meshes, camera inside the box, smooth union has no gap). Animated metaball demo.
 
 ---
 
@@ -939,6 +940,22 @@ created: 2026-11-16T23:27:38Z
 SDF shapes from #3 receive shadows from the shadow map, but they do not cast shadows. They are not drawn in the shadow pass, so they do not shadow meshes, the ground, or other SDF shapes, and they look like they float above the ground.
 
 Expected: SDF shapes cast shadows like meshes do.
+
+---
+
+## 41: Signed distance field (SDF) shapes cannot use PBR materials
+
++++
+status: new
+priority: low
+kind: feature
+depends: 3
+created: 2026-11-17T01:14:51Z
++++
+
+SignedDistanceMaterial.Surface has only a Blinn-Phong case. SDF shapes cannot be lit with PBR materials (metallic-roughness, clearcoat, sheen, image-based lighting), so they do not match PBR meshes in the same scene.
+
+MetalSprocketsPBR 0.2.2 provides PBRLighting.h (PBR::Fragment and PBR::shade) for surfaces that build their own fragment.
 
 ---
 
