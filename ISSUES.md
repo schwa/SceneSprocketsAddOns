@@ -429,8 +429,9 @@ status: open
 priority: medium
 kind: feature
 labels: effort:m
+milestone: M2
 created: 2026-11-16T19:33:43Z
-updated: 2026-11-16T19:43:26Z
+updated: 2026-11-17T04:55:48Z
 +++
 
 SceneSprockets backgrounds are a solid color, a gradient, or an environment map. There is no sky that follows a sun: a visible sun disc, a sky that brightens toward the sun, and a sun direction that matches the scene's directional light.
@@ -496,8 +497,9 @@ status: open
 priority: medium
 kind: feature
 labels: effort:l
+milestone: M2
 created: 2026-11-16T19:33:43Z
-updated: 2026-11-16T19:43:26Z
+updated: 2026-11-17T04:55:54Z
 +++
 
 There is no realistic sky that changes with the time of day: atmospheric scattering, sunrise and sunset colors, twilight, and matching sun light color for the scene.
@@ -671,8 +673,9 @@ status: open
 priority: low
 kind: feature
 labels: effort:m
+milestone: M2
 created: 2026-11-16T19:34:38Z
-updated: 2026-11-16T19:43:26Z
+updated: 2026-11-17T04:56:05Z
 +++
 
 Light does not scatter in the air, so there are no visible light shafts through gaps, trees or windows.
@@ -682,6 +685,8 @@ Light does not scatter in the air, so there are no visible light shafts through 
 An optional add-on, in its own target and product.
 
 - `2026-11-16T19:43:18Z`: Related: #21 (clouds).
+- `2026-11-17T17:51:53Z`: Related: #56 (volumetric fog).
+- `2026-11-17T17:55:43Z`: #56 moved to SceneSprockets#540.
 
 ---
 
@@ -713,8 +718,9 @@ status: open
 priority: low
 kind: feature
 labels: effort:m
+milestone: M2
 created: 2026-11-16T19:34:38Z
-updated: 2026-11-16T19:43:26Z
+updated: 2026-11-17T13:41:30Z
 +++
 
 MetalSprocketsGaussianSplats (https://github.com/schwa/MetalSprocketsGaussianSplats) draws 3D Gaussian splats and loads .ply, .splat, .spz and .sog files, but only in its own SplatView or render elements. A scene graph cannot hold a splat model as a node: splats cannot be placed with node transforms, drawn in the scene pass with the other meshes, depth-tested against opaque meshes, or culled and picked like other nodes.
@@ -751,12 +757,13 @@ An optional add-on, in its own target and product.
 ## 31: No cloth or rope simulation
 
 +++
-status: open
+status: closed
 priority: low
 kind: feature
 labels: effort:l
 created: 2026-11-16T19:34:38Z
-updated: 2026-11-16T19:43:26Z
+updated: 2026-11-17T17:55:39Z
+closed: 2026-11-17T17:55:39Z
 +++
 
 Scenes cannot simulate cloth (flags, curtains) or ropes and cables.
@@ -764,6 +771,8 @@ Scenes cannot simulate cloth (flags, curtains) or ropes and cables.
 ## Proposed (per user)
 
 An optional add-on, in its own target and product.
+
+- `2026-11-17T17:55:39Z`: Cloth duplicates SceneSprockets#437. Rope noted there.
 
 ---
 
@@ -919,8 +928,9 @@ status: open
 priority: low
 kind: feature
 labels: effort:m
+milestone: M2
 created: 2026-11-16T19:36:05Z
-updated: 2026-11-16T19:43:26Z
+updated: 2026-11-17T04:56:31Z
 +++
 
 A PointCloud's points are fixed when its node is made: positions, colors and sizes are copied into a buffer once. There is no way to animate them over time, for example point positions or colors that change per frame, point cloud sequences (one cloud per frame, such as volumetric video), or morphing between clouds. The only way to change the points is to make a new node.
@@ -1056,11 +1066,568 @@ Related: #40 (same gap for SDF shapes).
 
 ---
 
+## 47: Order-independent transparency
+
++++
+status: closed
+priority: high
+kind: feature
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+Weighted blended OIT is a practical starting point.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #494.
+
+---
+
+## 48: Decals / projected textures
+
++++
+status: closed
+priority: high
+kind: feature
+labels: effort:m
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T17:55:39Z
+closed: 2026-11-17T17:55:39Z
++++
+
+Useful for labels, markings, damage, and surface details.
+
+- `2026-11-17T17:55:39Z`: Duplicate of SceneSprockets#397.
+
+---
+
+## 49: Reflection probes
+
++++
+status: closed
+priority: high
+kind: feature
+labels: effort:l
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T17:55:39Z
+closed: 2026-11-17T17:55:39Z
++++
+
+Local cubemaps, parallax correction, probe blending.
+
+- `2026-11-17T17:51:53Z`: Related: #50, #51 (other reflection techniques).
+- `2026-11-17T17:55:39Z`: Moved to SceneSprockets#530.
+
+---
+
+## 50: Planar reflections
+
++++
+status: closed
+priority: medium
+kind: feature
+labels: effort:m
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T17:55:39Z
+closed: 2026-11-17T17:55:39Z
++++
+
+Mirrors, polished floors, water surfaces.
+
+- `2026-11-17T17:55:39Z`: Moved to SceneSprockets#531.
+
+---
+
+## 51: Screen-space reflections
+
++++
+status: closed
+priority: medium
+kind: feature
+labels: effort:m
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T17:55:39Z
+closed: 2026-11-17T17:55:39Z
++++
+
+Dynamic reflections without ray tracing.
+
+- `2026-11-17T17:55:39Z`: Duplicate of SceneSprockets#398.
+
+---
+
+## 52: Contact shadows
+
++++
+status: closed
+priority: high
+kind: feature
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+Small-scale shadows that conventional shadow maps miss.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #495.
+
+---
+
+## 53: Temporal anti-aliasing
+
++++
+status: closed
+priority: high
+kind: feature
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+Stabilizes geometry, specular highlights, and fine detail.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #496.
+
+---
+
+## 54: Depth of field
+
++++
+status: closed
+priority: medium
+kind: feature
+labels: effort:m
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T17:55:39Z
+closed: 2026-11-17T17:55:39Z
++++
+
+Camera realism and miniature/diorama effects.
+
+- `2026-11-17T17:55:39Z`: Duplicate of SceneSprockets#399.
+
+---
+
+## 55: Motion blur
+
++++
+status: closed
+priority: medium
+kind: feature
+labels: effort:m
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T17:55:39Z
+closed: 2026-11-17T17:55:39Z
++++
+
+Per-object and camera motion using velocity buffers.
+
+- `2026-11-17T17:55:39Z`: Duplicate of SceneSprockets#399.
+
+---
+
+## 56: Volumetric fog
+
++++
+status: closed
+priority: medium
+kind: feature
+labels: effort:l
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T17:55:40Z
+closed: 2026-11-17T17:55:40Z
++++
+
+Light scattering through participating media.
+
+- `2026-11-17T17:51:53Z`: Related: #27 (volumetric light shafts).
+- `2026-11-17T17:55:40Z`: Moved to SceneSprockets#540.
+
+---
+
+## 57: Light cookies / IES
+
++++
+status: closed
+priority: medium
+kind: feature
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+Projected lighting patterns and realistic light distributions.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #497.
+
+---
+
+## 58: Parallax occlusion mapping
+
++++
+status: closed
+priority: medium
+kind: feature
+labels: effort:s
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T17:55:39Z
+closed: 2026-11-17T17:55:39Z
++++
+
+Adds apparent surface depth without extra geometry.
+
+- `2026-11-17T17:55:40Z`: Moved to SceneSprockets#537.
+
+---
+
+## 59: Subsurface scattering
+
++++
+status: closed
+priority: medium
+kind: feature
+labels: effort:l
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T17:55:40Z
+closed: 2026-11-17T17:55:40Z
++++
+
+Skin, wax, leaves, translucent materials.
+
+- `2026-11-17T17:55:40Z`: Moved to SceneSprockets#538.
+
+---
+
+## 60: Transmission / refraction
+
++++
+status: closed
+priority: high
+kind: feature
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+Glass, liquids, transparent solids.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #498.
+
+---
+
+## 61: Stochastic transparency
+
++++
+status: closed
+priority: medium
+kind: feature
+labels: effort:m
+created: 2026-11-17T14:06:17Z
+updated: 2026-11-17T17:55:40Z
+closed: 2026-11-17T17:55:40Z
++++
+
+Useful for hair, foliage, and dense overlapping surfaces.
+
+- `2026-11-17T17:55:40Z`: Moved to SceneSprockets#539.
+
+---
+
+## 62: Alpha masking, alpha blending, and double-sided materials
+
++++
+status: closed
+priority: medium
+kind: task
+created: 2026-11-17T14:06:51Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+Alpha masking, alpha blending, and double-sided materials are not all handled correctly.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #499.
+
+---
+
+## 63: Normal mapping, tangent generation, and mirrored UVs
+
++++
+status: closed
+priority: medium
+kind: task
+created: 2026-11-17T14:06:51Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+Normal mapping, tangent generation, and mirrored UVs need correct handling.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #500.
+
+---
+
+## 64: HDR rendering, exposure, tone mapping, and color-space correctness
+
++++
+status: closed
+priority: medium
+kind: task
+created: 2026-11-17T14:06:51Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+HDR rendering, exposure, tone mapping, and color-space correctness.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #501.
+
+---
+
+## 65: Shadow bias, cascade transitions, and shadow filtering
+
++++
+status: closed
+priority: medium
+kind: task
+created: 2026-11-17T14:06:51Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+Shadow bias, cascade transitions, and shadow filtering.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #502.
+
+---
+
+## 66: MSAA resolve behavior with transparency and alpha-to-coverage
+
++++
+status: closed
+priority: medium
+kind: task
+created: 2026-11-17T14:06:51Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+MSAA resolve behavior, including transparency and alpha-to-coverage.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #503.
+
+---
+
+## 67: Texture mipmapping, anisotropic filtering, and compressed formats
+
++++
+status: closed
+priority: medium
+kind: task
+created: 2026-11-17T14:06:51Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+Texture mipmapping, anisotropic filtering, and compressed texture formats.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #504.
+
+---
+
+## 68: Instancing, frustum culling, and depth prepasses
+
++++
+status: closed
+priority: medium
+kind: task
+created: 2026-11-17T14:06:51Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+Instancing, frustum culling, and depth prepasses where beneficial.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #505.
+
+---
+
+## 69: Image-based lighting (IBL)
+
++++
+status: closed
+priority: medium
+kind: feature
+created: 2026-11-17T14:07:44Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+Good-looking materials without placing lights. Complexity: low–medium.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #506.
+
+---
+
+## 70: Automatic environment lighting
+
++++
+status: closed
+priority: medium
+kind: feature
+created: 2026-11-17T14:07:44Z
+updated: 2026-11-17T14:09:41Z
+closed: 2026-11-17T14:09:41Z
++++
+
+Sensible default illumination for any scene. Complexity: low.
+
+- `2026-11-17T14:09:41Z`: Moved to SceneSprockets #507.
+
+---
+
+## 71: Ambient / irradiance probes
+
++++
+status: closed
+priority: medium
+kind: feature
+labels: effort:m
+created: 2026-11-17T14:07:44Z
+updated: 2026-11-17T17:55:39Z
+closed: 2026-11-17T17:55:39Z
++++
+
+Objects receive lighting appropriate to their location. Complexity: medium.
+
+- `2026-11-17T17:51:53Z`: Related: #72 (DDGI is the dynamic form of light probes).
+- `2026-11-17T17:55:39Z`: Moved to SceneSprockets#532.
+
+---
+
+## 72: Light probes / DDGI
+
++++
+status: closed
+priority: medium
+kind: feature
+labels: effort:xl
+created: 2026-11-17T14:07:44Z
+updated: 2026-11-17T17:55:39Z
+closed: 2026-11-17T17:55:39Z
++++
+
+Dynamic indirect illumination, including color bleeding. Complexity: high.
+
+- `2026-11-17T17:51:53Z`: Related: #71 (irradiance probes).
+- `2026-11-17T17:55:39Z`: Moved to SceneSprockets#533.
+
+---
+
+## 73: Screen-space GI (SSGI)
+
++++
+status: closed
+priority: medium
+kind: feature
+labels: effort:l
+created: 2026-11-17T14:07:44Z
+updated: 2026-11-17T17:55:39Z
+closed: 2026-11-17T17:55:39Z
++++
+
+Approximate bounced light from visible surfaces. Complexity: medium–high.
+
+- `2026-11-17T17:55:39Z`: Moved to SceneSprockets#534.
+
+---
+
+## 74: Lightmaps
+
++++
+status: closed
+priority: medium
+kind: feature
+labels: effort:l
+created: 2026-11-17T14:07:44Z
+updated: 2026-11-17T17:55:39Z
+closed: 2026-11-17T17:55:39Z
++++
+
+High-quality indirect lighting for static scenes. Complexity: medium–high.
+
+- `2026-11-17T17:51:53Z`: Related: #75 (light baking produces lightmaps).
+- `2026-11-17T17:55:39Z`: Moved to SceneSprockets#535.
+
+---
+
+## 75: Light baking
+
++++
+status: closed
+priority: medium
+kind: feature
+labels: effort:xl
+created: 2026-11-17T14:07:44Z
+updated: 2026-11-17T17:55:39Z
+closed: 2026-11-17T17:55:39Z
++++
+
+Automatically generate lighting for static environments. Complexity: high.
+
+- `2026-11-17T17:51:53Z`: Related: #74 (lightmaps).
+- `2026-11-17T17:55:39Z`: Moved to SceneSprockets#536.
+
+---
+
+## 76: Automatic exposure
+
++++
+status: closed
+priority: medium
+kind: feature
+created: 2026-11-17T14:07:44Z
+updated: 2026-11-17T14:09:42Z
+closed: 2026-11-17T14:09:42Z
++++
+
+Avoid manually tuning brightness for every scene. Complexity: low–medium.
+
+- `2026-11-17T14:09:42Z`: Moved to SceneSprockets #508.
+
+---
+
+## 77: Area lights / LTC
+
++++
+status: closed
+priority: medium
+kind: feature
+created: 2026-11-17T14:07:44Z
+updated: 2026-11-17T14:09:42Z
+closed: 2026-11-17T14:09:42Z
++++
+
+Softer, more natural illumination from large sources. Complexity: medium.
+
+- `2026-11-17T14:09:42Z`: Moved to SceneSprockets #509.
+
+---
+
 ## Milestone: M1
 
 +++
 status: open
 created: 2026-11-16T23:15:55Z
++++
+
+---
+
+## Milestone: M2
+
++++
+status: open
+created: 2026-11-17T04:55:30Z
 +++
 
 ---
