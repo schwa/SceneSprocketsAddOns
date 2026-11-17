@@ -183,13 +183,13 @@ public extension SceneGraph.Node {
             return
         }
         var material = try SignedDistanceMaterial(shape: shape, surface: surface)
-        if case let .mesh(_, materials, _, receivesShadow) = content, let existing = materials.first as? SignedDistanceMaterial {
+        if case let .mesh(_, materials, castsShadow, receivesShadow) = content, let existing = materials.first as? SignedDistanceMaterial {
             material.maxSteps = existing.maxSteps
             material.hitThreshold = existing.hitThreshold
             material.stepScale = existing.stepScale
-            content = .mesh(Self.boundsMesh(bounds, device: device), materials: [material], castsShadow: false, receivesShadow: receivesShadow)
+            content = .mesh(Self.boundsMesh(bounds, device: device), materials: [material], castsShadow: castsShadow, receivesShadow: receivesShadow)
         } else {
-            content = .mesh(Self.boundsMesh(bounds, device: device), materials: [material], castsShadow: false)
+            content = .mesh(Self.boundsMesh(bounds, device: device), materials: [material])
         }
     }
 

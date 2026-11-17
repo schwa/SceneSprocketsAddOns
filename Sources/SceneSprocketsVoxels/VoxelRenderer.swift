@@ -4,7 +4,8 @@ import Metal
 import MetalSprockets
 import SceneSprockets
 import SceneSprocketsBlinnPhong
-import SceneSprocketsShaders
+import SceneSprocketsPBR
+import SceneSprocketsRaymarching
 import SceneSprocketsVoxelsShaders
 import simd
 import SwiftMesh
@@ -13,11 +14,21 @@ import SwiftMesh
 ///
 /// The grid is centered on the node's origin.
 public struct VoxelMaterial: SceneMaterial, SamplesShadowsInShader, AppliesAmbientOcclusionInShader {
-    /// How the voxels are lit.
+    /// How the voxels are lit. Only the material's factors and colors are used: its textures need texture
+    /// coordinates, which voxels do not have.
     public enum Surface {
         /// Lit like a Blinn-Phong mesh. Each voxel's color multiplies the material's ambient and diffuse colors.
-        /// Only the material's colors are used; its textures need texture coordinates, which voxels do not have.
         case blinnPhong(BlinnPhongSceneMaterial)
+        /// Lit like a PBR mesh, with the environment and exposure of the renderer's ``VoxelRenderer/pbr``. Each
+        /// voxel's color multiplies the material's base color.
+        case pbr(PBRSceneMaterial)
+
+        var raymarchSurface: RaymarchSurface {
+            switch self {
+            case .blinnPhong(let material): .blinnPhong(material)
+            case .pbr(let material): .pbr(material)
+            }
+        }
     }
 
     /// The voxels, made by ``VoxelGrid/makeTexture(device:)``.
@@ -45,24 +56,35 @@ public struct VoxelMaterial: SceneMaterial, SamplesShadowsInShader, AppliesAmbie
     }
 
     public var isTransparent: Bool {
-        switch surface {
-        case .blinnPhong(let material):
-            material.opacity < 1 || material.renderState.blendsWithBackground
-        }
+        surface.raymarchSurface.isTransparent
     }
 
-    var renderState: MaterialRenderState {
-        switch surface {
-        case .blinnPhong(let material):
-            material.renderState
-        }
+    // The node's uniforms and voxels. Grid space has one unit per voxel, with the grid from 0 to its size.
+    func bind(_ box: AnyElement, nodeMatrix: simd_float4x4) -> AnyElement {
+        let origin = bounds.min
+        let gridToNode = simd_float4x4(SIMD4(voxelSize, 0, 0, 0), SIMD4(0, voxelSize, 0, 0), SIMD4(0, 0, voxelSize, 0), SIMD4(origin, 1))
+        let modelMatrix = nodeMatrix * gridToNode
+        var uniforms = VoxelUniforms()
+        uniforms.modelMatrix = modelMatrix
+        uniforms.inverseModelMatrix = modelMatrix.inverse
+        uniforms.normalMatrix = modelMatrix.upperLeft.inverse.transpose
+        uniforms.size = SIMD3<Int32>(truncatingIfNeeded: size)
+        return box
+            .parameter("uniforms", value: uniforms)
+            .parameter("voxels", functionType: .fragment, texture: texture)
+            .eraseToAnyElement()
     }
 }
 
 public extension SceneGraph.Node {
     /// Replaces the node's content with a voxel grid, centered on the node's origin.
     func setVoxels(_ grid: VoxelGrid, voxelSize: Float = 1, surface: VoxelMaterial.Surface = .blinnPhong(BlinnPhongSceneMaterial(color: [1, 1, 1])), device: MTLDevice) throws {
-        let material = VoxelMaterial(texture: try grid.makeTexture(device: device), voxelSize: voxelSize, surface: surface)
+        setVoxels(VoxelMaterial(texture: try grid.makeTexture(device: device), voxelSize: voxelSize, surface: surface), device: device)
+    }
+
+    /// Replaces the node's content with a voxel material, centered on the node's origin. Nodes can share a material,
+    /// and so its texture.
+    func setVoxels(_ material: VoxelMaterial, device: MTLDevice) {
         let bounds = material.bounds
         let corners = (0..<8).map { index in
             SIMD3<Float>(
@@ -79,132 +101,71 @@ public extension SceneGraph.Node {
             submeshes: [MetalMesh.SubmeshIndices(label: "Bounds", indices: indices, primitiveType: .triangle)],
             label: "Voxel Bounds"
         )
-        content = .mesh(mesh, materials: [material], castsShadow: false)
+        content = .mesh(mesh, materials: [material])
     }
 }
 
 /// The renderer that draws every node with a ``VoxelMaterial``.
 ///
 /// Each node draws the back faces of its grid's box, so it still draws when the camera is inside the box. Voxels write
-/// their depth, so they hide and are hidden by meshes. They receive shadows but do not cast them.
-public struct VoxelRenderer: MaterialRenderer {
-    /// The color of the ambient light, in linear RGB. Match the Blinn-Phong renderer's so both look alike.
+/// their depth, so they hide and are hidden by meshes. They receive shadows, and cast them when their node's
+/// `castsShadow` is set.
+public struct VoxelRenderer: MaterialRenderer, ShadowCasterRenderer {
+    /// The color of the ambient light for Blinn-Phong surfaces, in linear RGB. Match the Blinn-Phong renderer's so
+    /// both look alike.
     public var ambientLightColor: SIMD3<Float>
+    /// The environment, exposure and tone mapping for PBR surfaces. Pass the scene's PBR renderer so both look alike.
+    public var pbr: PBRMaterialRenderer
 
     /// Creates a voxel renderer.
-    public init(ambientLightColor: SIMD3<Float> = [0.15, 0.15, 0.2]) {
+    public init(ambientLightColor: SIMD3<Float> = [0.15, 0.15, 0.2], pbr: PBRMaterialRenderer = PBRMaterialRenderer()) {
         self.ambientLightColor = ambientLightColor
+        self.pbr = pbr
     }
 
     public var materialType: any SceneMaterial.Type {
         VoxelMaterial.self
     }
 
-    // swiftlint:disable:next unneeded_throws_rethrows - the protocol requirement throws
     public func makeElement(entries: [SceneGraph.MeshEntry], context: RenderContext) throws -> AnyElement {
         let inFrustum = meshEntriesInFrustum(entries, projectionMatrix: context.projectionMatrix, cameraMatrix: context.cameraMatrix)
-        let draws = zip(entries, inFrustum).compactMap { entry, isInFrustum -> (entry: SceneGraph.MeshEntry, material: VoxelMaterial)? in
+        let draws = zip(entries, inFrustum).compactMap { entry, isInFrustum -> RaymarchDraw? in
             guard isInFrustum, let material = entry.material as? VoxelMaterial else {
                 return nil
             }
-            return (entry, material)
-        }
-        return VoxelElement(draws: draws, shading: BlinnPhongShading(context: context, ambientLightColor: ambientLightColor), ambientOcclusion: context.ambientOcclusion, isTransparent: entries.first?.isTransparent ?? false, stereoViews: context.stereoViews)
-            .eraseToAnyElement()
-    }
-}
-
-// An element so it can read the submission index (the shadow map has one texture per frame in flight).
-private struct VoxelElement: Element {
-    var draws: [(entry: SceneGraph.MeshEntry, material: VoxelMaterial)]
-    var shading: BlinnPhongShading
-    var ambientOcclusion: MTLTexture?
-    var isTransparent: Bool
-    var stereoViews: StereoViews?
-
-    @MSEnvironment(\.submissionIndex)
-    private var submissionIndex
-
-    var body: some Element {
-        get throws {
-            let shaders = try VoxelShaders.shared()
-            let fragmentShader = shading.shadow == nil ? shaders.fragment : shaders.shadowedFragment
-            let shadowBinding = shading.shadowBinding(submissionIndex: submissionIndex)
-            let placeholder = try VoxelShaders.placeholderTexture()
-            let shading = shading
-            let ambientOcclusion = ambientOcclusion
-            let stereoViews = stereoViews
-            let isTransparent = isTransparent
-            return ForEach(Array(draws.enumerated()), id: \.offset) { _, draw in
-                try RenderPipeline(label: "Voxels", vertexShader: shaders.vertex, fragmentShader: fragmentShader) {
-                    Self.draw(draw.entry, draw.material, shading: shading, shadowBinding: shadowBinding, ambientOcclusion: ambientOcclusion ?? placeholder, stereoViews: stereoViews)
-                }
-                .materialRenderState(draw.material.renderState, isTransparent: isTransparent, writesBlendedDepth: stereoViews != nil)
-                .vertexAmplification(count: stereoViews?.count ?? 1)
+            return RaymarchDraw(entry: entry, surface: material.surface.raymarchSurface) { box, nodeMatrix in
+                material.bind(box, nodeMatrix: nodeMatrix)
             }
         }
+        return RaymarchElement(draws: draws, shaders: { try VoxelShaders.shared().scene }, context: context, ambientLightColor: ambientLightColor, pbr: pbr)
+            .eraseToAnyElement()
     }
 
-    static func draw(_ entry: SceneGraph.MeshEntry, _ material: VoxelMaterial, shading: BlinnPhongShading, shadowBinding: (texture: MTLTexture, sampler: MTLSamplerState, uniforms: BlinnPhongShadowUniforms)?, ambientOcclusion: MTLTexture, stereoViews: StereoViews?) -> AnyElement {
-        let world = entry.worldTransform
-        var nodeMatrix = world
-        nodeMatrix.columns.3 = SIMD4(SIMD3<Float>(SIMD3<Double>(world.columns.3.xyz) - SIMD3<Double>(shading.cameraPosition)), 1)
-        // Grid space has one unit per voxel, with the grid from 0 to its size.
-        let scale = material.voxelSize
-        let origin = material.bounds.min
-        let gridToNode = simd_float4x4(SIMD4(scale, 0, 0, 0), SIMD4(0, scale, 0, 0), SIMD4(0, 0, scale, 0), SIMD4(origin, 1))
-        let modelMatrix = nodeMatrix * gridToNode
-        var uniforms = VoxelUniforms()
-        uniforms.modelMatrix = modelMatrix
-        uniforms.inverseModelMatrix = modelMatrix.inverse
-        let linear = simd_float3x3(modelMatrix.columns.0.xyz, modelMatrix.columns.1.xyz, modelMatrix.columns.2.xyz)
-        uniforms.normalMatrix = linear.inverse.transpose
-        uniforms.size = SIMD3<Int32>(truncatingIfNeeded: material.size)
-
-        var surface: BlinnPhongMaterialUniforms
-        switch material.surface {
-        case .blinnPhong(let blinnPhong):
-            surface = blinnPhong.uniforms
+    public func makeShadowCasterElement(entries: [SceneGraph.MeshEntry], context: ShadowCasterContext) throws -> AnyElement {
+        let shaders = try VoxelShaders.shared()
+        let draws = entries.compactMap { entry -> (entry: SceneGraph.MeshEntry, material: VoxelMaterial)? in
+            (entry.material as? VoxelMaterial).map { (entry, $0) }
         }
-        surface.receivesShadow = entry.receivesShadow ? 1 : 0
-        surface.opacity *= entry.opacity
-
-        let isMirrored = linear.determinant < 0
-        var element = Draw { encoder in
-            stereoViews?.configure(encoder)
-            // Back faces, so the box still draws with the camera inside it.
-            encoder.setCullMode(.front)
-            encoder.setFrontFacing(isMirrored ? .clockwise : .counterClockwise)
-            encoder.drawPrimitives(primitiveType: .triangle, vertexStart: 0, vertexCount: 36)
+        return try RenderPipeline(label: "Voxel Shadows", vertexShader: shaders.shadowVertex, fragmentShader: shaders.shadowFragment) {
+            ForEach(Array(draws.enumerated()), id: \.offset) { _, draw in
+                let nodeMatrix = raymarchModelMatrix(draw.entry.worldTransform, origin: context.renderOrigin)
+                draw.material.bind(raymarchBoxDraw(modelMatrix: nodeMatrix), nodeMatrix: nodeMatrix)
+            }
+            .parameter("lightViewProjection", value: context.viewProjection)
+            .parameter("shadowMapSize", functionType: .fragment, value: Float(context.resolution))
+            .parameter("inverseViewProjection", functionType: .fragment, value: context.viewProjection.inverse)
         }
-        .parameter("frame", functionType: .vertex, value: shading.frame)
-        .parameter("uniforms", functionType: .vertex, value: uniforms)
-        .parameter("frame", functionType: .fragment, value: shading.frame)
-        .parameter("lights", functionType: .fragment, values: shading.lights)
-        .parameter("material", functionType: .fragment, value: surface)
-        .parameter("uniforms", functionType: .fragment, value: uniforms)
-        .parameter("voxels", texture: material.texture)
-        .parameter("ambientOcclusion", texture: ambientOcclusion)
         .eraseToAnyElement()
-        if let shadowBinding {
-            element = element
-                .parameter("shadowMap", texture: shadowBinding.texture)
-                .parameter("shadowSampler", samplerState: shadowBinding.sampler)
-                .parameter("shadow", functionType: .fragment, value: shadowBinding.uniforms)
-                .eraseToAnyElement()
-        }
-        return element
     }
 }
 
 // From Voxel.metal, loaded once.
 private struct VoxelShaders {
-    var vertex: VertexShader
-    var fragment: FragmentShader
-    var shadowedFragment: FragmentShader
+    var scene: RaymarchShaders
+    var shadowVertex: VertexShader
+    var shadowFragment: FragmentShader
 
     nonisolated(unsafe) private static var cached: Self?
-    nonisolated(unsafe) private static var cachedPlaceholder: MTLTexture?
     private static let lock = NSLock()
 
     static func shared() throws -> Self {
@@ -214,41 +175,12 @@ private struct VoxelShaders {
             return cached
         }
         let library = try ShaderLibrary(bundle: .sceneSprocketsVoxelsShaders()).namespaced("Voxel")
-        func fragment(shadows: Bool) throws -> FragmentShader {
-            var constants = FunctionConstants()
-            constants["HAS_SHADOWS"] = .bool(shadows)
-            return try library.function(named: "fragment_main", type: FragmentShader.self, constants: constants)
-        }
         let shaders = Self(
-            vertex: try library.function(named: "vertex_main", type: VertexShader.self),
-            fragment: try fragment(shadows: false),
-            shadowedFragment: try fragment(shadows: true)
+            scene: try RaymarchShaders(library: library),
+            shadowVertex: try library.function(named: "shadow_vertex", type: VertexShader.self),
+            shadowFragment: try library.function(named: "shadow_fragment", type: FragmentShader.self)
         )
         cached = shaders
         return shaders
-    }
-
-    // 1x1 white: full ambient visibility when ambient occlusion is off.
-    static func placeholderTexture() throws -> MTLTexture {
-        lock.lock()
-        defer { lock.unlock() }
-        if let cachedPlaceholder {
-            return cachedPlaceholder
-        }
-        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .rgba8Unorm, width: 1, height: 1, mipmapped: false)
-        descriptor.usage = .shaderRead
-        descriptor.storageMode = .shared
-        let texture = try (MTLCreateSystemDefaultDevice()?.makeTexture(descriptor: descriptor))
-            .orThrow(.resourceCreationFailure("Failed to create the voxel placeholder texture"))
-        texture.label = "Voxel Placeholder"
-        texture.replace(region: MTLRegionMake2D(0, 0, 1, 1), mipmapLevel: 0, withBytes: [UInt8](repeating: 255, count: 4), bytesPerRow: 4)
-        cachedPlaceholder = texture
-        return texture
-    }
-}
-
-private extension SIMD4 where Scalar == Float {
-    var xyz: SIMD3<Float> {
-        SIMD3(x, y, z)
     }
 }

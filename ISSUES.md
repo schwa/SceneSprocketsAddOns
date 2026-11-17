@@ -931,11 +931,13 @@ A PointCloud's points are fixed when its node is made: positions, colors and siz
 ## 40: Signed distance field (SDF) shapes cast no shadows
 
 +++
-status: new
+status: closed
 priority: low
 kind: feature
 depends: 3
 created: 2026-11-16T23:27:38Z
+updated: 2026-11-17T02:56:59Z
+closed: 2026-11-17T02:56:59Z
 +++
 
 SDF shapes from #3 receive shadows from the shadow map, but they do not cast shadows. They are not drawn in the shadow pass, so they do not shadow meshes, the ground, or other SDF shapes, and they look like they float above the ground.
@@ -947,11 +949,13 @@ Expected: SDF shapes cast shadows like meshes do.
 ## 41: Signed distance field (SDF) shapes cannot use PBR materials
 
 +++
-status: new
+status: closed
 priority: low
 kind: feature
 depends: 3
 created: 2026-11-17T01:14:51Z
+updated: 2026-11-17T02:56:59Z
+closed: 2026-11-17T02:56:59Z
 +++
 
 SignedDistanceMaterial.Surface has only a Blinn-Phong case. SDF shapes cannot be lit with PBR materials (metallic-roughness, clearcoat, sheen, image-based lighting), so they do not match PBR meshes in the same scene.
@@ -963,10 +967,12 @@ MetalSprocketsPBR 0.2.2 provides PBRLighting.h (PBR::Fragment and PBR::shade) fo
 ## 42: MagicaVoxel loader ignores the file's scene graph
 
 +++
-status: new
+status: closed
 priority: low
 kind: feature
 created: 2026-11-17T02:09:45Z
+updated: 2026-11-17T02:56:59Z
+closed: 2026-11-17T02:56:59Z
 +++
 
 VoxelGrid.magicaVoxelModels(data:) ignores the nTRN, nGRP, nSHP and LAYR chunks. Files with more than one model load as separate grids with no position, rotation, or layer. Scenes built in MagicaVoxel from several models do not load as laid out.
@@ -978,10 +984,12 @@ Related: #17.
 ## 43: MagicaVoxel files without a palette load as gray
 
 +++
-status: new
+status: closed
 priority: low
 kind: bug
 created: 2026-11-17T02:09:46Z
+updated: 2026-11-17T02:56:59Z
+closed: 2026-11-17T02:56:59Z
 +++
 
 A .vox file with no RGBA chunk uses MagicaVoxel's built-in default palette. VoxelGrid.magicaVoxelModels(data:) makes every voxel gray (200, 200, 200) instead, so such files lose their colors.
@@ -993,10 +1001,12 @@ Related: #17.
 ## 44: SceneSprocketsVoxels has no DocC documentation
 
 +++
-status: new
+status: closed
 priority: low
 kind: documentation
 created: 2026-11-17T02:09:46Z
+updated: 2026-11-17T02:56:59Z
+closed: 2026-11-17T02:56:59Z
 +++
 
 The SceneSprocketsVoxels product has no documentation catalog. VoxelGrid, VoxelMaterial, VoxelRenderer, the MagicaVoxel loader, and SceneGraph.Node.setVoxels do not appear in any DocC page.
@@ -1008,11 +1018,13 @@ Related: #17.
 ## 45: Voxel grids cannot use PBR materials
 
 +++
-status: new
+status: closed
 priority: low
 kind: feature
 depends: 17
 created: 2026-11-17T02:10:23Z
+updated: 2026-11-17T02:56:59Z
+closed: 2026-11-17T02:56:59Z
 +++
 
 VoxelMaterial.Surface has only a Blinn-Phong case. Voxel grids cannot be lit with PBR materials (metallic-roughness, clearcoat, sheen, image-based lighting), so they do not match PBR meshes in the same scene.
@@ -1026,11 +1038,13 @@ Related: #41 (same gap for SDF shapes).
 ## 46: Voxel grids cast no shadows
 
 +++
-status: new
+status: closed
 priority: low
 kind: feature
 depends: 17
 created: 2026-11-17T02:10:23Z
+updated: 2026-11-17T02:56:59Z
+closed: 2026-11-17T02:56:59Z
 +++
 
 Voxel grids receive shadows from the shadow map, but they do not cast shadows. They are not drawn in the shadow pass, so they do not shadow meshes, the ground, other voxel grids, or themselves.

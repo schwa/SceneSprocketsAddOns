@@ -2,20 +2,25 @@ import Foundation
 import GeometryLite3D
 import Metal
 import MetalSprockets
+import MetalSprocketsPBR
 import SceneSprockets
 import SceneSprocketsAddOnsShaders
 import SceneSprocketsBlinnPhong
+import SceneSprocketsPBR
+import SceneSprocketsRaymarching
 import SceneSprocketsShaders
 import simd
 
 /// The material of a signed distance node: the shape, its surface, and how to raymarch it. A
 /// ``SignedDistanceRenderer`` draws it.
 public struct SignedDistanceMaterial: SceneMaterial, SamplesShadowsInShader, AppliesAmbientOcclusionInShader {
-    /// How the surface is lit.
+    /// How the surface is lit. Only the material's factors and colors are used: its textures need texture
+    /// coordinates, which the shape does not have.
     public enum Surface {
-        /// Lit like a Blinn-Phong mesh. Only the material's colors are used; its textures need texture coordinates,
-        /// which the shape does not have.
+        /// Lit like a Blinn-Phong mesh.
         case blinnPhong(BlinnPhongSceneMaterial)
+        /// Lit like a PBR mesh, with the environment and exposure of the renderer's ``SignedDistanceRenderer/pbr``.
+        case pbr(PBRSceneMaterial)
     }
 
     /// The shape. Change it with `SceneGraph.Node.setSignedDistanceShape(_:surface:device:)`, which also updates the
@@ -42,16 +47,15 @@ public struct SignedDistanceMaterial: SceneMaterial, SamplesShadowsInShader, App
     }
 
     public var isTransparent: Bool {
-        switch surface {
-        case .blinnPhong(let material):
-            material.opacity < 1 || material.renderState.blendsWithBackground
-        }
+        surface.raymarchSurface.isTransparent
     }
+}
 
-    var renderState: MaterialRenderState {
-        switch surface {
-        case .blinnPhong(let material):
-            material.renderState
+extension SignedDistanceMaterial.Surface {
+    var raymarchSurface: RaymarchSurface {
+        switch self {
+        case .blinnPhong(let material): .blinnPhong(material)
+        case .pbr(let material): .pbr(material)
         }
     }
 }
@@ -59,125 +63,87 @@ public struct SignedDistanceMaterial: SceneMaterial, SamplesShadowsInShader, App
 /// The renderer that raymarches every node with a ``SignedDistanceMaterial``.
 ///
 /// Each node draws the back faces of its bounding box, so it still draws when the camera is inside the box. Shapes
-/// write their depth, so they hide and are hidden by meshes. They receive shadows but do not cast them.
-public struct SignedDistanceRenderer: MaterialRenderer {
-    /// The color of the ambient light, in linear RGB. Match the Blinn-Phong renderer's so both look alike.
+/// write their depth, so they hide and are hidden by meshes. They receive shadows, and cast them when their node's
+/// `castsShadow` is set.
+public struct SignedDistanceRenderer: MaterialRenderer, ShadowCasterRenderer {
+    /// The color of the ambient light for Blinn-Phong surfaces, in linear RGB. Match the Blinn-Phong renderer's so
+    /// both look alike.
     public var ambientLightColor: SIMD3<Float>
+    /// The environment, exposure and tone mapping for PBR surfaces. Pass the scene's PBR renderer so both look alike.
+    public var pbr: PBRMaterialRenderer
 
     /// Creates a signed distance renderer.
-    public init(ambientLightColor: SIMD3<Float> = [0.15, 0.15, 0.2]) {
+    public init(ambientLightColor: SIMD3<Float> = [0.15, 0.15, 0.2], pbr: PBRMaterialRenderer = PBRMaterialRenderer()) {
         self.ambientLightColor = ambientLightColor
+        self.pbr = pbr
     }
 
     public var materialType: any SceneMaterial.Type {
         SignedDistanceMaterial.self
     }
 
-    // swiftlint:disable:next unneeded_throws_rethrows - the protocol requirement throws
     public func makeElement(entries: [SceneGraph.MeshEntry], context: RenderContext) throws -> AnyElement {
         let inFrustum = meshEntriesInFrustum(entries, projectionMatrix: context.projectionMatrix, cameraMatrix: context.cameraMatrix)
-        let draws = zip(entries, inFrustum).compactMap { entry, isInFrustum -> (entry: SceneGraph.MeshEntry, material: SignedDistanceMaterial)? in
+        let draws = zip(entries, inFrustum).compactMap { entry, isInFrustum -> RaymarchDraw? in
             guard isInFrustum, let material = entry.material as? SignedDistanceMaterial, !material.instructions.isEmpty else {
+                return nil
+            }
+            return RaymarchDraw(entry: entry, surface: material.surface.raymarchSurface) { box, modelMatrix in
+                material.bind(box, modelMatrix: modelMatrix)
+            }
+        }
+        return RaymarchElement(draws: draws, shaders: { try SignedDistanceShaders.shared().scene }, context: context, ambientLightColor: ambientLightColor, pbr: pbr)
+            .eraseToAnyElement()
+    }
+
+    public func makeShadowCasterElement(entries: [SceneGraph.MeshEntry], context: ShadowCasterContext) throws -> AnyElement {
+        let shaders = try SignedDistanceShaders.shared()
+        let draws = entries.compactMap { entry -> (entry: SceneGraph.MeshEntry, material: SignedDistanceMaterial)? in
+            guard let material = entry.material as? SignedDistanceMaterial, !material.instructions.isEmpty else {
                 return nil
             }
             return (entry, material)
         }
-        return SignedDistanceElement(draws: draws, shading: BlinnPhongShading(context: context, ambientLightColor: ambientLightColor), ambientOcclusion: context.ambientOcclusion, isTransparent: entries.first?.isTransparent ?? false, stereoViews: context.stereoViews)
-            .eraseToAnyElement()
+        return try RenderPipeline(label: "Signed Distance Shadows", vertexShader: shaders.shadowVertex, fragmentShader: shaders.shadowFragment) {
+            ForEach(Array(draws.enumerated()), id: \.offset) { _, draw in
+                let modelMatrix = raymarchModelMatrix(draw.entry.worldTransform, origin: context.renderOrigin)
+                draw.material.bind(raymarchBoxDraw(modelMatrix: modelMatrix), modelMatrix: modelMatrix)
+            }
+            .parameter("lightViewProjection", value: context.viewProjection)
+            .parameter("shadowMapSize", functionType: .fragment, value: Float(context.resolution))
+            .parameter("inverseViewProjection", functionType: .fragment, value: context.viewProjection.inverse)
+        }
+        .eraseToAnyElement()
     }
 }
 
-// An element so it can read the submission index (the shadow map has one texture per frame in flight).
-private struct SignedDistanceElement: Element {
-    var draws: [(entry: SceneGraph.MeshEntry, material: SignedDistanceMaterial)]
-    var shading: BlinnPhongShading
-    var ambientOcclusion: MTLTexture?
-    var isTransparent: Bool
-    var stereoViews: StereoViews?
-
-    @MSEnvironment(\.submissionIndex)
-    private var submissionIndex
-
-    var body: some Element {
-        get throws {
-            let shaders = try SignedDistanceShaders.shared()
-            let fragmentShader = shading.shadow == nil ? shaders.fragment : shaders.shadowedFragment
-            let shadowBinding = shading.shadowBinding(submissionIndex: submissionIndex)
-            let placeholder = try SignedDistanceShaders.placeholderTexture()
-            let shading = shading
-            let ambientOcclusion = ambientOcclusion
-            let stereoViews = stereoViews
-            let isTransparent = isTransparent
-            return ForEach(Array(draws.enumerated()), id: \.offset) { _, draw in
-                try RenderPipeline(label: "Signed Distance", vertexShader: shaders.vertex, fragmentShader: fragmentShader) {
-                    Self.draw(draw.entry, draw.material, shading: shading, shadowBinding: shadowBinding, ambientOcclusion: ambientOcclusion ?? placeholder, stereoViews: stereoViews)
-                }
-                .materialRenderState(draw.material.renderState, isTransparent: isTransparent, writesBlendedDepth: stereoViews != nil)
-                .vertexAmplification(count: stereoViews?.count ?? 1)
-            }
-        }
-    }
-
-    static func draw(_ entry: SceneGraph.MeshEntry, _ material: SignedDistanceMaterial, shading: BlinnPhongShading, shadowBinding: (texture: MTLTexture, sampler: MTLSamplerState, uniforms: BlinnPhongShadowUniforms)?, ambientOcclusion: MTLTexture, stereoViews: StereoViews?) -> AnyElement {
-        let world = entry.worldTransform
-        var modelMatrix = world
-        modelMatrix.columns.3 = SIMD4(SIMD3<Float>(SIMD3<Double>(world.columns.3.xyz) - SIMD3<Double>(shading.cameraPosition)), 1)
+private extension SignedDistanceMaterial {
+    // The per-node uniforms and program.
+    func bind(_ box: AnyElement, modelMatrix: simd_float4x4) -> AnyElement {
         var uniforms = SignedDistanceUniforms()
         uniforms.modelMatrix = modelMatrix
         uniforms.inverseModelMatrix = modelMatrix.inverse
-        let linear = simd_float3x3(modelMatrix.columns.0.xyz, modelMatrix.columns.1.xyz, modelMatrix.columns.2.xyz)
-        uniforms.normalMatrix = linear.inverse.transpose
-        uniforms.boundsMin = material.bounds.min
-        uniforms.boundsMax = material.bounds.max
-        uniforms.instructionCount = Int32(material.instructions.count)
-        uniforms.maxSteps = Int32(material.maxSteps)
-        uniforms.hitThreshold = material.hitThreshold
-        uniforms.stepScale = material.stepScale
-
-        var surface: BlinnPhongMaterialUniforms
-        switch material.surface {
-        case .blinnPhong(let blinnPhong):
-            surface = blinnPhong.uniforms
-        }
-        surface.receivesShadow = entry.receivesShadow ? 1 : 0
-        surface.opacity *= entry.opacity
-
-        let isMirrored = linear.determinant < 0
-        var element = Draw { encoder in
-            stereoViews?.configure(encoder)
-            // Back faces, so the box still draws with the camera inside it.
-            encoder.setCullMode(.front)
-            encoder.setFrontFacing(isMirrored ? .clockwise : .counterClockwise)
-            encoder.drawPrimitives(primitiveType: .triangle, vertexStart: 0, vertexCount: 36)
-        }
-        .parameter("frame", functionType: .vertex, value: shading.frame)
-        .parameter("uniforms", functionType: .vertex, value: uniforms)
-        .parameter("frame", functionType: .fragment, value: shading.frame)
-        .parameter("lights", functionType: .fragment, values: shading.lights)
-        .parameter("material", functionType: .fragment, value: surface)
-        .parameter("uniforms", functionType: .fragment, value: uniforms)
-        .parameter("instructions", functionType: .fragment, values: material.instructions)
-        .parameter("ambientOcclusion", texture: ambientOcclusion)
-        .eraseToAnyElement()
-        if let shadowBinding {
-            element = element
-                .parameter("shadowMap", texture: shadowBinding.texture)
-                .parameter("shadowSampler", samplerState: shadowBinding.sampler)
-                .parameter("shadow", functionType: .fragment, value: shadowBinding.uniforms)
-                .eraseToAnyElement()
-        }
-        return element
+        uniforms.normalMatrix = modelMatrix.upperLeft.inverse.transpose
+        uniforms.boundsMin = bounds.min
+        uniforms.boundsMax = bounds.max
+        uniforms.instructionCount = Int32(instructions.count)
+        uniforms.maxSteps = Int32(maxSteps)
+        uniforms.hitThreshold = hitThreshold
+        uniforms.stepScale = stepScale
+        return box
+            .parameter("uniforms", value: uniforms)
+            .parameter("instructions", functionType: .fragment, values: instructions)
+            .eraseToAnyElement()
     }
 }
 
 // From SignedDistance.metal, loaded once.
 private struct SignedDistanceShaders {
-    var vertex: VertexShader
-    var fragment: FragmentShader
-    var shadowedFragment: FragmentShader
+    var scene: RaymarchShaders
+    var shadowVertex: VertexShader
+    var shadowFragment: FragmentShader
 
     nonisolated(unsafe) private static var cached: Self?
-    nonisolated(unsafe) private static var cachedPlaceholder: MTLTexture?
     private static let lock = NSLock()
 
     static func shared() throws -> Self {
@@ -187,41 +153,12 @@ private struct SignedDistanceShaders {
             return cached
         }
         let library = try ShaderLibrary(bundle: .sceneSprocketsAddOnsShaders()).namespaced("SignedDistance")
-        func fragment(shadows: Bool) throws -> FragmentShader {
-            var constants = FunctionConstants()
-            constants["HAS_SHADOWS"] = .bool(shadows)
-            return try library.function(named: "fragment_main", type: FragmentShader.self, constants: constants)
-        }
         let shaders = Self(
-            vertex: try library.function(named: "vertex_main", type: VertexShader.self),
-            fragment: try fragment(shadows: false),
-            shadowedFragment: try fragment(shadows: true)
+            scene: try RaymarchShaders(library: library),
+            shadowVertex: try library.function(named: "shadow_vertex", type: VertexShader.self),
+            shadowFragment: try library.function(named: "shadow_fragment", type: FragmentShader.self)
         )
         cached = shaders
         return shaders
-    }
-
-    // 1x1 white: full ambient visibility when ambient occlusion is off.
-    static func placeholderTexture() throws -> MTLTexture {
-        lock.lock()
-        defer { lock.unlock() }
-        if let cachedPlaceholder {
-            return cachedPlaceholder
-        }
-        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .rgba8Unorm, width: 1, height: 1, mipmapped: false)
-        descriptor.usage = .shaderRead
-        descriptor.storageMode = .shared
-        let texture = try (MTLCreateSystemDefaultDevice()?.makeTexture(descriptor: descriptor))
-            .orThrow(.resourceCreationFailure("Failed to create the signed distance placeholder texture"))
-        texture.label = "Signed Distance Placeholder"
-        texture.replace(region: MTLRegionMake2D(0, 0, 1, 1), mipmapLevel: 0, withBytes: [UInt8](repeating: 255, count: 4), bytesPerRow: 4)
-        cachedPlaceholder = texture
-        return texture
-    }
-}
-
-private extension SIMD4 where Scalar == Float {
-    var xyz: SIMD3<Float> {
-        SIMD3(x, y, z)
     }
 }

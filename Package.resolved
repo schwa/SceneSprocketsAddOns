@@ -1,5 +1,5 @@
 {
-  "originHash" : "75b54cb30db04ec94df81a2b2f7e773720015890402929723c86e08f2f4d3316",
+  "originHash" : "781a89b522261c6d0464000afde94fdc866a1d697a746d081c979f396052a91b",
   "pins" : [
     {
       "identity" : "basisuniversalmetal",
@@ -87,8 +87,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/MetalSprocketsPBR",
       "state" : {
-        "revision" : "e5dad5a16dfdeaac07c8ce28511a137e65462a1b",
-        "version" : "0.2.2"
+        "revision" : "da45fe6cc916e944413bcb77b798dcee6ff2f3b3",
+        "version" : "0.2.3"
       }
     },
     {
@@ -106,7 +106,7 @@
       "location" : "https://github.com/schwa/SceneSprockets",
       "state" : {
         "branch" : "main",
-        "revision" : "a097c733a35401b01e8f78cd31d4eaace37a7c03"
+        "revision" : "a4b1831b709e316457d1575ea5a55a0bcd84d28b"
       }
     },
     {
