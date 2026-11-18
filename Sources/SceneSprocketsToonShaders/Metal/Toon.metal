@@ -92,7 +92,8 @@ namespace Toon {
             float rim = 1.0 - max(dot(normal, toCamera), 0.0);
             color += material.rimColor * smoothstep(material.rimThreshold, material.rimThreshold + 0.02, rim);
         }
-        return float4(color, material.opacity);
+        // The scene's exposure and tone mapping, as every renderer applies them.
+        return float4(frame.linearOutput ? color : Lighting::toneMap(color * frame.exposure, frame.toneMapping), material.opacity);
     }
 
     // MARK: Outline
