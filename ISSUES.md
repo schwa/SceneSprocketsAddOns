@@ -1620,7 +1620,7 @@ Softer, more natural illumination from large sources. Complexity: medium.
 status: new
 priority: low
 kind: enhancement
-labels: area:performance,effort:m
+labels: area:performance, effort:m
 created: 2026-11-18T18:18:23Z
 +++
 
@@ -1636,6 +1636,24 @@ Effects:
 
 Depends on: MetalSprockets#579 (no persistent argument buffers) and MetalSprocketsPBR#38 (scene-wide lighting inputs).
 Related: SceneSprockets#542 (no shared lighting model).
+
+---
+
+## 79: Voxel, signed-distance and toon shaders read PBRLight and copy PBR's lighting by hand
+
++++
+status: new
+priority: medium
+kind: enhancement
+labels: effort:m
+created: 2026-11-18T19:25:59Z
++++
+
+Voxel.metal, SignedDistance.metal and Toon.metal read MetalSprocketsPBR's PBRLight and repeat PBR's lighting texture slots and shading inputs by hand.
+
+MetalSprocketsPBR (next 0.3.0) removed PBRLight, PBRShadowUniforms and PBREnvironment in favor of MetalSprocketsLighting (LightingLight, LightingShadowUniforms, LightingEnvironment, Lighting::sample, Lighting::shadow), and bundles its lighting textures in a PBRFrameResources argument buffer. These add-ons do not build against that version, and their copied layouts drift from PBR's.
+
+Related: #78 (texture slots), SceneSprockets#547 (shared lighting package).
 
 ---
 
