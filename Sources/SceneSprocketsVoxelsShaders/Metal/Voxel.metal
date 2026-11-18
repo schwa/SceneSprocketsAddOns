@@ -176,19 +176,12 @@ namespace Voxel {
         Fragment in [[stage_in]],
         constant PBRMaterialUniforms &material [[buffer(0)]],
         constant PBRFrameUniforms &frame [[buffer(1)]],
-        constant PBRLight *lights [[buffer(2)]],
+        constant LightingLight *lights [[buffer(2)]],
         constant PBRMaterialResources &materialResources [[buffer(3)]],
-        constant PBRShadowUniforms &shadow [[buffer(4)]],
+        constant LightingShadowUniforms &shadow [[buffer(4)]],
         constant VoxelUniforms &uniforms [[buffer(5)]],
-        texture3d<float, access::read> voxels [[texture(6)]],
-        texturecube<float> environmentIrradiance [[texture(0)]],
-        texturecube<float> environmentSpecular [[texture(1)]],
-        texture2d<float> brdfLookup [[texture(2)]],
-        texture2d_array<float> transmissionScene [[texture(3)]],
-        depth2d_array<float> shadowMap [[texture(4)]],
-        texture2d<float> ambientOcclusion [[texture(5)]],
-        sampler environmentSampler [[sampler(0)]],
-        sampler shadowSampler [[sampler(1)]]
+        constant PBRFrameResources &frameResources [[buffer(6)]],
+        texture3d<float, access::read> voxels [[texture(6)]]
     ) {
         float3 camera = frame.cameraPositions[in.view];
         float3 world;
@@ -210,7 +203,7 @@ namespace Voxel {
         surface.modelScale = 1;
         surface.record = 0;
         surface.eye = in.view;
-        out.color = PBR::shade(surface, true, material, frame, lights, materialResources, environmentIrradiance, environmentSpecular, brdfLookup, transmissionScene, environmentSampler, shadow, shadowMap, shadowSampler, ambientOcclusion);
+        out.color = PBR::shade(surface, true, material, frame, lights, materialResources, shadow, frameResources);
         return out;
     }
 

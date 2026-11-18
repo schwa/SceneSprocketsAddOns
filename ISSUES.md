@@ -1642,11 +1642,13 @@ Related: SceneSprockets#542 (no shared lighting model).
 ## 79: Voxel, signed-distance and toon shaders read PBRLight and copy PBR's lighting by hand
 
 +++
-status: new
+status: closed
 priority: medium
 kind: enhancement
 labels: effort:m
 created: 2026-11-18T19:25:59Z
+updated: 2026-11-18T19:40:35Z
+closed: 2026-11-18T19:40:35Z
 +++
 
 Voxel.metal, SignedDistance.metal and Toon.metal read MetalSprocketsPBR's PBRLight and repeat PBR's lighting texture slots and shading inputs by hand.

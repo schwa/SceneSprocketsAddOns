@@ -125,6 +125,7 @@ package struct RaymarchElement: Element {
             let placeholder = try RaymarchPlaceholder.texture()
             let ambientOcclusion = context.ambientOcclusion ?? placeholder
             let pbrBindings = draws.contains { if case .pbr = $0.surface { true } else { false } } ? try pbr.frameBindings(context: context, submissionIndex: submissionIndex) : nil
+            let pbrFrameResources = pbrBindings?.makeFrameResources()
             let stereoViews = context.stereoViews
             let isTransparent = draws.first?.entry.isTransparent ?? false
             return ForEach(Array(draws.enumerated()), id: \.offset) { _, draw in
@@ -141,7 +142,7 @@ package struct RaymarchElement: Element {
                     .eraseToAnyElement()
                 case .pbr(let material):
                     try RenderPipeline(label: "Raymarched PBR", vertexShader: shaders.vertex, fragmentShader: shaders.pbr) {
-                        try Self.pbr(box, material: material, entry: draw.entry, bindings: pbrBindings)
+                        try Self.pbr(box, material: material, entry: draw.entry, bindings: pbrBindings, frameResources: pbrFrameResources)
                     }
                     .materialRenderState(draw.surface.renderState, isTransparent: isTransparent, writesBlendedDepth: stereoViews != nil)
                     .vertexAmplification(count: stereoViews?.count ?? 1)
@@ -171,14 +172,15 @@ package struct RaymarchElement: Element {
     }
 
     // `bindings` is made in `body` whenever a draw is PBR.
-    static func pbr(_ box: some Element, material: PBRSceneMaterial, entry: SceneGraph.MeshEntry, bindings: PBRFrameBindings?) throws -> AnyElement {
+    static func pbr(_ box: some Element, material: PBRSceneMaterial, entry: SceneGraph.MeshEntry, bindings: PBRFrameBindings?, frameResources: ArgumentBuffer?) throws -> AnyElement {
         var bindings = try bindings.orThrow(.resourceCreationFailure("No PBR frame bindings"))
+        let frameResources = try frameResources.orThrow(.resourceCreationFailure("No PBR frame resources"))
         if !entry.receivesShadow {
             bindings.shadow.enabled = 0
         }
         return bindings.apply(to: box
             .parameter("material", functionType: .fragment, value: material.raymarchUniforms(opacity: entry.opacity))
-            .parameter("materialResources", functionType: .fragment, buffer: material.pbrMaterial.resourceBuffer))
+            .parameter("materialResources", functionType: .fragment, argumentBuffer: material.pbrMaterial.resources), frameResources: frameResources)
             .eraseToAnyElement()
     }
 }
