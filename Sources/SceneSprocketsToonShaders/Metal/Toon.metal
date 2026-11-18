@@ -51,11 +51,11 @@ namespace Toon {
     [[fragment]] float4 fragment_main(
         Fragment in [[stage_in]],
         constant BlinnPhongFrame &frame [[buffer(0)]],
-        constant BlinnPhongLight *lights [[buffer(1)]],
+        constant LightingLight *lights [[buffer(1)]],
         constant ToonMaterialUniforms &material [[buffer(2)]],
         depth2d_array<float, access::sample> shadowMap [[texture(3), function_constant(HAS_SHADOWS)]],
         sampler shadowSampler [[sampler(1), function_constant(HAS_SHADOWS)]],
-        constant BlinnPhongShadowUniforms &shadow [[buffer(3), function_constant(HAS_SHADOWS)]]
+        constant LightingShadowUniforms &shadow [[buffer(3), function_constant(HAS_SHADOWS)]]
     ) {
         float3 normal = length_squared(in.normal) > 1e-8 ? normalize(in.normal) : float3(0, 1, 0);
         float3 toCamera = normalize(frame.cameraPositions[in.view] - in.worldPosition);
@@ -63,38 +63,27 @@ namespace Toon {
         float3 lit = 0;
         float3 highlight = 0;
         for (int index = 0; index < frame.lightCount; index++) {
-            BlinnPhongLight light = lights[index];
-            float3 toLight;
-            float attenuation = 1;
-            if (light.type == BLINN_PHONG_LIGHT_DIRECTIONAL) {
-                toLight = -light.direction;
-            } else {
-                toLight = light.position - in.worldPosition;
-                float distanceSquared = length_squared(toLight);
-                toLight = normalize(toLight);
-                float rangeRatio = sqrt(distanceSquared) / light.range;
-                float rangeFalloff = saturate(1.0 - rangeRatio * rangeRatio * rangeRatio * rangeRatio);
-                attenuation = rangeFalloff * rangeFalloff / (distanceSquared + 1.0);
-                if (light.type == BLINN_PHONG_LIGHT_SPOT) {
-                    attenuation *= smoothstep(light.outerConeCos, light.innerConeCos, dot(-toLight, light.direction));
-                }
-            }
+            const LightingLight light = lights[index];
+            const Lighting::LightSample lightSample = Lighting::sample(light, in.worldPosition);
+            const float3 toLight = lightSample.toLight;
             float lambertian = max(dot(toLight, normal), 0.0);
-            if (lambertian == 0.0 || attenuation == 0.0) {
+            if (lambertian == 0.0 || all(lightSample.radiance == 0.0)) {
                 continue;
             }
+            // One visibility value, not a tinted color: it is banded with the diffuse term.
             float visible = 1;
             if (HAS_SHADOWS && material.receivesShadow != 0 && light.shadowSliceCount > 0) {
-                for (int slice = light.shadowSliceStart; slice < light.shadowSliceStart + light.shadowSliceCount; slice++) {
-                    visible *= BlinnPhong::sliceShadow(in.worldPosition, shadow.sliceViewProjections[slice], shadow.mapSize, shadow.radius, shadowMap, shadowSampler, uint(slice));
+                const int end = min(light.shadowSliceStart + light.shadowSliceCount, kLightingMaxShadowSliceCount);
+                for (int slice = max(light.shadowSliceStart, 0); slice < end; slice++) {
+                    visible *= Lighting::sliceShadow(in.worldPosition, shadow.sliceViewProjections[slice], shadow.mapSize, shadow.radius, shadowMap, shadowSampler, uint(slice));
                 }
                 visible = mix(1.0, visible, shadow.intensity);
             }
             float band = quantize(lambertian * visible, material.bands, material.bandSoftness);
-            lit += light.color * attenuation * band;
+            lit += lightSample.radiance * band;
             if (material.highlightThreshold < 1 && visible > 0.5) {
                 float specular = dot(normalize(toLight + toCamera), normal);
-                highlight += light.color * attenuation * step(material.highlightThreshold, specular);
+                highlight += lightSample.radiance * step(material.highlightThreshold, specular);
             }
         }
         float3 color = material.color * mix(material.shadeColor, float3(1), saturate(lit));

@@ -143,7 +143,7 @@ namespace Voxel {
     [[fragment]] Output fragment_main(
         Fragment in [[stage_in]],
         constant BlinnPhongFrame &frame [[buffer(0)]],
-        constant BlinnPhongLight *lights [[buffer(1)]],
+        constant LightingLight *lights [[buffer(1)]],
         constant BlinnPhongMaterialUniforms &material [[buffer(2)]],
         constant VoxelUniforms &uniforms [[buffer(4)]],
         // Linear colors; alpha 0 is empty.
@@ -152,7 +152,7 @@ namespace Voxel {
         texture2d<float, access::read> ambientOcclusion [[texture(6)]],
         depth2d_array<float, access::sample> shadowMap [[texture(3), function_constant(HAS_SHADOWS)]],
         sampler shadowSampler [[sampler(1), function_constant(HAS_SHADOWS)]],
-        constant BlinnPhongShadowUniforms &shadow [[buffer(3), function_constant(HAS_SHADOWS)]]
+        constant LightingShadowUniforms &shadow [[buffer(3), function_constant(HAS_SHADOWS)]]
     ) {
         float3 camera = frame.cameraPositions[in.view];
         float3 world;

@@ -152,7 +152,7 @@ package struct RaymarchElement: Element {
         }
     }
 
-    static func blinnPhong(_ box: some Element, material: BlinnPhongSceneMaterial, entry: SceneGraph.MeshEntry, shading: BlinnPhongShading, shadowBinding: (texture: MTLTexture, sampler: MTLSamplerState, uniforms: BlinnPhongShadowUniforms)?, ambientOcclusion: MTLTexture) -> AnyElement {
+    static func blinnPhong(_ box: some Element, material: BlinnPhongSceneMaterial, entry: SceneGraph.MeshEntry, shading: BlinnPhongShading, shadowBinding: (texture: MTLTexture, sampler: MTLSamplerState, uniforms: LightingShadowUniforms)?, ambientOcclusion: MTLTexture) -> AnyElement {
         var surface = material.uniforms
         surface.receivesShadow = entry.receivesShadow ? 1 : 0
         surface.opacity *= entry.opacity

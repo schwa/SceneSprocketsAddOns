@@ -161,7 +161,7 @@ private struct ToonElement: Element {
         }
     }
 
-    static func bindShadows(_ element: some Element, shadowBinding: (texture: MTLTexture, sampler: MTLSamplerState, uniforms: BlinnPhongShadowUniforms)?) -> AnyElement {
+    static func bindShadows(_ element: some Element, shadowBinding: (texture: MTLTexture, sampler: MTLSamplerState, uniforms: LightingShadowUniforms)?) -> AnyElement {
         guard let shadowBinding else {
             return element.eraseToAnyElement()
         }
