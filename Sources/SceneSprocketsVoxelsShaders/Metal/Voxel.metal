@@ -180,7 +180,7 @@ namespace Voxel {
         constant PBRMaterialResources &materialResources [[buffer(3)]],
         constant LightingShadowUniforms &shadow [[buffer(4)]],
         constant VoxelUniforms &uniforms [[buffer(5)]],
-        constant PBRFrameResources &frameResources [[buffer(6)]],
+        constant LightingFrameResources &frameResources [[buffer(6)]],
         texture3d<float, access::read> voxels [[texture(6)]]
     ) {
         float3 camera = frame.cameraPositions[in.view];

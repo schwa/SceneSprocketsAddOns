@@ -226,7 +226,7 @@ namespace SignedDistance {
         constant LightingShadowUniforms &shadow [[buffer(4)]],
         constant SignedDistanceUniforms &uniforms [[buffer(5)]],
         constant SignedDistanceInstruction *instructions [[buffer(6)]],
-        constant PBRFrameResources &frameResources [[buffer(7)]]
+        constant LightingFrameResources &frameResources [[buffer(7)]]
     ) {
         float3 camera = frame.cameraPositions[in.view];
         float3 world;

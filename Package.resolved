@@ -1,5 +1,5 @@
 {
-  "originHash" : "e75f425dfcdbfccb0997c8e6ce47343b1e6041ffc670724df796477ca168796b",
+  "originHash" : "1fde6775c58780cc65f084058acd6f64d2ea8513272b257a24c67632b8e68f23",
   "pins" : [
     {
       "identity" : "basisuniversalmetal",
@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/MetalSprocketsGLTF",
       "state" : {
-        "revision" : "45ec40a12c3202b6a7f24236fdca0dc61681dd06",
-        "version" : "0.2.0"
+        "revision" : "911935784c5afc43ac816326b811295e4cfef385",
+        "version" : "0.3.0"
       }
     },
     {
@@ -78,8 +78,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/MetalSprocketsLighting",
       "state" : {
-        "revision" : "d35c123f4316576d917657ca71abd59aac61860b",
-        "version" : "0.0.3"
+        "revision" : "1d541786fc9be6fbe6fc78942f249ec663efc4ae",
+        "version" : "0.0.4"
       }
     },
     {
@@ -96,8 +96,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/MetalSprocketsPBR",
       "state" : {
-        "revision" : "06aac65659179389379cebd032f38fd41e155951",
-        "version" : "0.3.0"
+        "revision" : "c3a05c796f0e2ea6eaff567795579531edc9dc59",
+        "version" : "0.4.0"
       }
     },
     {
@@ -115,7 +115,7 @@
       "location" : "https://github.com/schwa/SceneSprockets",
       "state" : {
         "branch" : "main",
-        "revision" : "b78043fe270d89364e667f3d723914099015c13d"
+        "revision" : "3335845f403f06a51ba23829616b9f1161f1f370"
       }
     },
     {

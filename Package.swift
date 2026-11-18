@@ -17,7 +17,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/schwa/SceneSprockets", branch: "main"),
-        .package(url: "https://github.com/schwa/MetalSprocketsPBR", .upToNextMinor(from: "0.3.0")),
+        .package(url: "https://github.com/schwa/MetalSprocketsPBR", .upToNextMinor(from: "0.4.0")),
         .package(url: "https://github.com/schwa/GeometryLite3D", .upToNextMinor(from: "0.3.0")),
         .package(url: "https://github.com/schwa/MetalSprockets", .upToNextMinor(from: "0.3.0")),
         .package(url: "https://github.com/schwa/SwiftMesh", .upToNextMinor(from: "0.1.0")),
