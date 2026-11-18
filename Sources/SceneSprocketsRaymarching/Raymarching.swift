@@ -178,9 +178,10 @@ package struct RaymarchElement: Element {
         if !entry.receivesShadow {
             bindings.shadow.enabled = 0
         }
-        return bindings.apply(to: box
+        let content = box
             .parameter("material", functionType: .fragment, value: material.raymarchUniforms(opacity: entry.opacity))
-            .parameter("materialResources", functionType: .fragment, argumentBuffer: material.pbrMaterial.resources), frameResources: frameResources)
+            .parameter("materialResources", functionType: .fragment, argumentBuffer: material.pbrMaterial.resources)
+        return bindings.apply(to: content, frameResources: frameResources)
             .eraseToAnyElement()
     }
 }
