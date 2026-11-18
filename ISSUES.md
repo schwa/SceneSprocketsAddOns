@@ -1614,6 +1614,31 @@ Softer, more natural illumination from large sources. Complexity: medium.
 
 ---
 
+## 78: Terrain, voxel and signed-distance renderers bind textures one slot at a time on every draw
+
++++
+status: new
+priority: low
+kind: enhancement
+labels: area:performance,effort:m
+created: 2026-11-18T18:18:23Z
++++
+
+The add-on renderers bind their textures as separate slots per draw, every frame:
+
+- Terrain: Terrain.metal declares up to 8 textures per draw (heights, blendNoise, moments, colorMap, maskMap, detailNoise, farHeights, farMoments); TerrainTessellator.swift binds 17 texture parameters.
+- Voxels and signed-distance surfaces: Voxel.metal and SignedDistance.metal repeat PBR's scene-wide lighting slots by hand (environmentIrradiance, environmentSpecular, brdfLookup, transmissionScene, shadowMap, ambientOcclusion), and must be kept in step with MetalSprocketsPBR's PBR.metal layout.
+
+Effects:
+- Per-draw binding cost.
+- The lighting slot layout is copied across packages, so a change in MetalSprocketsPBR breaks these shaders silently.
+- These draws cannot use indirect command buffers.
+
+Depends on: MetalSprockets#579 (no persistent argument buffers) and MetalSprocketsPBR#38 (scene-wide lighting inputs).
+Related: SceneSprockets#542 (no shared lighting model).
+
+---
+
 ## Milestone: M1
 
 +++
