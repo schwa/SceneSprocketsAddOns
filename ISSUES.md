@@ -1659,6 +1659,22 @@ Related: #78 (texture slots), SceneSprockets#547 (shared lighting package).
 
 ---
 
+## 80: Toon outlines are drawn without the scene's exposure and tone mapping
+
++++
+status: new
+priority: low
+kind: bug
+labels: effort:s
+created: 2026-11-19T01:11:03Z
++++
+
+Toon's main fragment applies the scene's exposure and tone mapping (SceneSprockets#501), but the outline pass (Toon.metal, outline_vertex and its fragment) writes its outline color as is. With the default PBR Neutral tone mapping, or any exposure other than 1, outlines and the shaded surface they border go through different color paths, so an outline set to the same color as the surface does not match it.
+
+Expected: outlines follow the scene's exposure and tone mapping like the rest of the toon surface, or the difference is documented as intended.
+
+---
+
 ## Milestone: M1
 
 +++
