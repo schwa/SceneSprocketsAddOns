@@ -17,7 +17,6 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/schwa/SceneSprockets", branch: "main"),
-        .package(url: "https://github.com/schwa/MetalSprocketsPBR", .upToNextMinor(from: "0.4.0")),
         .package(url: "https://github.com/schwa/GeometryLite3D", .upToNextMinor(from: "0.3.0")),
         .package(url: "https://github.com/schwa/MetalSprockets", .upToNextMinor(from: "0.3.0")),
         .package(url: "https://github.com/schwa/SwiftMesh", .upToNextMinor(from: "0.1.0")),
@@ -34,7 +33,7 @@ let package = Package(
                 .product(name: "SceneSprocketsBlinnPhong", package: "SceneSprockets"),
                 .product(name: "SceneSprocketsPBR", package: "SceneSprockets"),
                 .product(name: "SceneSprocketsShaders", package: "SceneSprockets"),
-                .product(name: "MetalSprocketsPBR", package: "MetalSprocketsPBR"),
+                .product(name: "MetalSprocketsPBR", package: "SceneSprockets"),
                 .product(name: "MetalSprockets", package: "MetalSprockets"),
             ]
         ),
@@ -48,7 +47,7 @@ let package = Package(
                 .product(name: "SceneSprocketsBlinnPhong", package: "SceneSprockets"),
                 .product(name: "SceneSprocketsPBR", package: "SceneSprockets"),
                 .product(name: "SceneSprocketsShaders", package: "SceneSprockets"),
-                .product(name: "MetalSprocketsPBR", package: "MetalSprocketsPBR"),
+                .product(name: "MetalSprocketsPBR", package: "SceneSprockets"),
                 .product(name: "GeometryLite3D", package: "GeometryLite3D"),
                 .product(name: "MetalSprockets", package: "MetalSprockets"),
                 .product(name: "MetalSprocketsAddOns", package: "MetalSprocketsAddOns"),
@@ -60,7 +59,7 @@ let package = Package(
             name: "SceneSprocketsAddOnsShaders",
             dependencies: [
                 .product(name: "SceneSprocketsShaders", package: "SceneSprockets"),
-                .product(name: "MetalSprocketsPBRShaders", package: "MetalSprocketsPBR"),
+                .product(name: "MetalSprocketsPBRShaders", package: "SceneSprockets"),
             ],
             exclude: ["Metal"],
             cSettings: [.define("METAL_COMPILER_PLUGIN_DEBUG", .when(configuration: .debug))],
@@ -97,7 +96,7 @@ let package = Package(
                 .product(name: "SceneSprockets", package: "SceneSprockets"),
                 .product(name: "SceneSprocketsBlinnPhong", package: "SceneSprockets"),
                 .product(name: "SceneSprocketsPBR", package: "SceneSprockets"),
-                .product(name: "MetalSprocketsPBR", package: "MetalSprocketsPBR"),
+                .product(name: "MetalSprocketsPBR", package: "SceneSprockets"),
                 .product(name: "SceneSprocketsShaders", package: "SceneSprockets"),
                 .product(name: "GeometryLite3D", package: "GeometryLite3D"),
                 .product(name: "MetalSprockets", package: "MetalSprockets"),
@@ -108,7 +107,7 @@ let package = Package(
             name: "SceneSprocketsVoxelsShaders",
             dependencies: [
                 .product(name: "SceneSprocketsShaders", package: "SceneSprockets"),
-                .product(name: "MetalSprocketsPBRShaders", package: "MetalSprocketsPBR"),
+                .product(name: "MetalSprocketsPBRShaders", package: "SceneSprockets"),
             ],
             exclude: ["Metal"],
             cSettings: [.define("METAL_COMPILER_PLUGIN_DEBUG", .when(configuration: .debug))],
