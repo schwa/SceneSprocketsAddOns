@@ -17,10 +17,10 @@ public enum HeightSource {
 public extension HeightSource {
     /// Real elevation around the Golden Gate (USGS 3DEP, public domain), true scale with the default `worldSize` and
     /// `heightScale`. The image stores heights + 120 m so the bay floor is kept; the floor at 0 draws the water flat.
-    /// See Resources/SanFranciscoBay.md.
+    /// See Heightmaps/SanFranciscoBay.md.
     static func sanFranciscoBay() throws -> HeightSource {
         guard
-            let url = Bundle.module.url(forResource: "SanFranciscoBay", withExtension: "png", subdirectory: "Resources"),
+            let url = Bundle.module.url(forResource: "SanFranciscoBay", withExtension: "png", subdirectory: "Heightmaps"),
             let source = CGImageSourceCreateWithURL(url as CFURL, nil),
             let image = CGImageSourceCreateImageAtIndex(source, 0, nil)
         else {

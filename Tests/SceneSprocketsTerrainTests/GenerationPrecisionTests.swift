@@ -65,7 +65,7 @@ enum ReferenceTerrain {
         descriptor.storageMode = .shared
         let texture = try #require(device.makeTexture(descriptor: descriptor))
         let start = SIMD2(Int(distance / texelMeters), -size / 2)
-        try generator.bake([.init(start: start, count: SIMD2(repeating: size))], into: texture, worldSize: Float(Double(size) * texelMeters), heightScale: 1_100, runner: try Runner(device: device))
+        try generator.bake([.init(start: start, count: SIMD2(repeating: size))], into: texture, worldSize: Float(Double(size) * texelMeters), heightScale: 1_100, runner: try Runner(configuration: MetalContextConfiguration(device: device)))
 
         var values = [SIMD2<Float>](repeating: .zero, count: size * size)
         texture.getBytes(&values, bytesPerRow: size * 8, from: MTLRegionMake2D(0, 0, size, size), mipmapLevel: 0)

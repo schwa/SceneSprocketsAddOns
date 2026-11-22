@@ -11,7 +11,7 @@ struct TerrainTreeTests {
     @Test func subdivisionStaysConforming() throws {
         let device = try #require(MTLCreateSystemDefaultDevice())
         let terrain = try Terrain(device: device)
-        let runner = try Runner(device: device)
+        let runner = try Runner(configuration: MetalContextConfiguration(device: device))
         let camera = FlyCamera()
         camera.position = [0, 600, 0]
 
@@ -168,7 +168,7 @@ struct TerrainTreeTests {
     @Test func flatTerrainDoesNotSplit() throws {
         let device = try #require(MTLCreateSystemDefaultDevice())
         let image = try grayImage([UInt16](repeating: 30_000, count: 64 * 64), width: 64)
-        let runner = try Runner(device: device)
+        let runner = try Runner(configuration: MetalContextConfiguration(device: device))
         let camera = FlyCamera()
         camera.position = [0, 900, 0]
         camera.pitch = -1
@@ -188,7 +188,7 @@ struct TerrainTreeTests {
 
     @Test func leafSubdivisionShrinksTree() throws {
         let device = try #require(MTLCreateSystemDefaultDevice())
-        let runner = try Runner(device: device)
+        let runner = try Runner(configuration: MetalContextConfiguration(device: device))
         let camera = FlyCamera()
         camera.position = [0, 600, 0]
 

@@ -76,7 +76,8 @@ let package = Package(
                 .product(name: "SwiftMesh", package: "SwiftMesh"),
             ],
             // Copied, not processed, so the 16-bit heightmap PNG is not recompressed.
-            resources: [.copy("Resources")]
+            // Not "Resources": codesign rejects that folder name at the top of a visionOS or iOS bundle.
+            resources: [.copy("Heightmaps")]
         ),
         .target(
             name: "SceneSprocketsTerrainShaders",

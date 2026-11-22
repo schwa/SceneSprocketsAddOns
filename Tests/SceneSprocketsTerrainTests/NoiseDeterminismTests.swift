@@ -54,7 +54,7 @@ import Testing
             let terrain = try Terrain(device: device, heightSource: .procedural(size: 1_024))
             let camera = FlyCamera()
             camera.pitch = -0.6
-            let runner = try Runner(device: device)
+            let runner = try Runner(configuration: MetalContextConfiguration(device: device))
             let settings = TerrainSettings()
             for _ in 0 ..< 60 {
                 try runner.run(try terrain.tessellator.updateWork(uniforms: terrain.makeUniforms(camera: camera, size: CGSize(width: 160, height: 160), settings: settings)))
