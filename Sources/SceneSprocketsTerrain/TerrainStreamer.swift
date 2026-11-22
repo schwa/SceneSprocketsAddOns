@@ -55,7 +55,7 @@ public final class TerrainStreamer {
                 try makeLevel(resolution: outerResolution, size: baseSize * Float(Self.outerLevelScale))
             ]
         }
-        let runner = try Runner(device: device)
+        let runner = try Runner(configuration: MetalContextConfiguration(device: device))
         for level in levels {
             let resolution = SIMD2(level.moments.width, level.moments.height)
             try fill([.init(start: SIMD2(-resolution.x / 2, -resolution.y / 2), count: resolution)], of: level, runner: runner)
@@ -86,7 +86,7 @@ public final class TerrainStreamer {
             return []
         }
         let xz = SIMD2(position.x, position.z)
-        let runner = try Runner(device: levels[0].moments.device)
+        let runner = try Runner(configuration: MetalContextConfiguration(device: levels[0].moments.device))
         var changes: Changes = []
         for level in levels.dropLast() where try follow(xz, level: level, runner: runner) {
             changes.insert(.levels)

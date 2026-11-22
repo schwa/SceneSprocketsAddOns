@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/MetalSprockets",
       "state" : {
-        "revision" : "650d600c468594e9a890a8debad2fe6ad7fa1088",
-        "version" : "0.3.7"
+        "revision" : "1c9a73700ce717a66c6108ceb322bc7bbef87ae1",
+        "version" : "0.3.9"
       }
     },
     {
@@ -88,7 +88,7 @@
       "location" : "https://github.com/schwa/SceneSprockets",
       "state" : {
         "branch" : "main",
-        "revision" : "3f480827757de388119725f32e44003373737baa"
+        "revision" : "86c9d67e8135b2c1ca39ed99a726066293e39e5b"
       }
     },
     {

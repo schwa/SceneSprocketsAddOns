@@ -54,7 +54,7 @@ enum Heightmap {
     private static func extract(moments: MTLTexture, into heights: MTLTexture, library: ShaderLibrary) throws {
         let kernel: ComputeKernel = try library.heightmap_extract
         let level0 = try levelView(moments, 0)
-        try Runner(device: moments.device).run(
+        try Runner(configuration: MetalContextConfiguration(device: moments.device)).run(
             try ComputePass(label: "Extract Heights") {
                 try ComputePipeline(computeKernel: kernel) {
                     try ComputeDispatch(threadsPerGrid: MTLSize(width: moments.width, height: moments.height, depth: 1))
@@ -74,7 +74,7 @@ enum Heightmap {
             throw TerrainError.allocationFailed(label)
         }
         noise.label = label
-        try Runner(device: device).run(
+        try Runner(configuration: MetalContextConfiguration(device: device)).run(
             try ComputePass(label: "Bake \(label)") {
                 try ComputePipeline(computeKernel: kernel) {
                     try ComputeDispatch(threadsPerGrid: MTLSize(width: 512, height: 512, depth: 1))
